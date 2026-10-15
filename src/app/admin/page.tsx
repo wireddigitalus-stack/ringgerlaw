@@ -63,6 +63,8 @@ export default function AdminDashboardPage() {
   const [leads, setLeads] = useState<LeadRecord[]>([]);
   const [intakes, setIntakes] = useState<IntakeRecord[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null);
+  const [storageEngine, setStorageEngine] = useState<"supabase" | "local-fallback">("local-fallback");
+  const [supabaseUrl, setSupabaseUrl] = useState<string>("https://kufyxqggfzotrbckyzld.supabase.co");
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"pipeline" | "intakes" | "seo" | "valuation">("pipeline");
   const [filterUrgency, setFilterUrgency] = useState<string>("ALL");
@@ -124,6 +126,8 @@ export default function AdminDashboardPage() {
       setLeads(data.leads || []);
       setIntakes(data.intakes || []);
       setAnalytics(data.analytics || null);
+      if (data.storageEngine) setStorageEngine(data.storageEngine);
+      if (data.supabaseUrl) setSupabaseUrl(data.supabaseUrl);
       if (data.intakes?.length && !selectedIntake) {
         setSelectedIntake(data.intakes[0]);
       }
@@ -310,8 +314,22 @@ export default function AdminDashboardPage() {
         {/* Top Executive Header */}
         <div className="bg-gradient-to-r from-[#0D1627] via-[#131F36] to-[#0D1627] text-white rounded-2xl p-6 shadow-2xl border border-white/10 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#A8E028] mb-1">
-              <Award className="w-4 h-4" /> Ringger Law • Executive Command Center &amp; Turnkey Asset Valuation
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#A8E028]">
+                <Award className="w-4 h-4" /> Ringger Law • Executive Command Center
+              </span>
+              <span
+                className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
+                  storageEngine === "supabase"
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                    : "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                }`}
+                title={supabaseUrl}
+              >
+                {storageEngine === "supabase"
+                  ? "● Supabase Connected (kufyxqggfzotrbckyzld)"
+                  : "● Supabase Ready (Add NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local)"}
+              </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
               Lead Capture CRM, Court Intake Portal &amp; SEO/GEO Analytics

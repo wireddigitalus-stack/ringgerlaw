@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addLead, getDb, saveDb, LeadStatus } from "@/lib/db";
+import { addLeadAsync, getDbAsync, updateLeadStatusAsync, LeadStatus } from "@/lib/db";
 
 export async function GET() {
-  const db = getDb();
+  const db = await getDbAsync();
   return NextResponse.json({
     leads: db.leads,
     intakes: db.intakes,
     analytics: db.analytics,
+    storageEngine: db.storageEngine,
+    supabaseUrl: db.supabaseUrl,
   });
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const created = addLead({
+    const created = await addLeadAsync({
       firstName: body.firstName || "Prospective Client",
       lastName: body.lastName || "",
       phone: body.phone || "",
@@ -24,7 +26,7 @@ export async function POST(req: NextRequest) {
       ownsHome: Boolean(body.ownsHome),
       behindOnPayments: Boolean(body.behindOnPayments),
       sourcePage: body.sourcePage || "/",
-      captureMethod: body.captureMethod || "60-Sec Qualifier Quiz",
+      captureMethod: body.captureMethod || "Free Consultation Form",
       preferredDate: body.preferredDate || "",
       preferredTime: body.preferredTime || "",
       notes: body.notes || "",
@@ -40,15 +42,11 @@ export async function PATCH(req: NextRequest) {
   try {
     const body = await req.json();
     const { id, status, notes } = body as { id: string; status?: LeadStatus; notes?: string };
-    const db = getDb();
-    const lead = db.leads.find((l) => l.id === id);
-    if (!lead) {
+    const updated = await updateLeadStatusAsync(id, status, notes);
+    if (!updated) {
       return NextResponse.json({ success: false, error: "Lead not found" }, { status: 404 });
     }
-    if (status) lead.status = status;
-    if (typeof notes === "string") lead.notes = notes;
-    saveDb(db);
-    return NextResponse.json({ success: true, lead });
+    return NextResponse.json({ success: true, lead: updated });
   } catch {
     return NextResponse.json({ success: false, error: "Failed to update lead" }, { status: 400 });
   }
