@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -20,8 +20,65 @@ import {
 } from "lucide-react";
 import { FIRM_INFO, PRACTICE_AREAS, COUNTY_LOCATIONS } from "@/lib/seo-data";
 
+type NavLayoutMode = "full" | "compact" | "drawer";
+
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [navMode, setNavMode] = useState<NavLayoutMode>("full");
+  const headerRowRef = useRef<HTMLDivElement>(null);
+
+  const evaluateZoomAndOverflow = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    const vw = window.visualViewport?.width || window.innerWidth;
+    const pinchScale = window.visualViewport?.scale || 1;
+    const rootFontPx =
+      parseFloat(window.getComputedStyle(document.documentElement).fontSize || "16") || 16;
+    const fontScale = Math.max(1, rootFontPx / 16);
+
+    // Effective viewport width accounting for browser zoom, pinch zoom, and custom OS/browser font scaling
+    const effectiveWidth = vw / (pinchScale * fontScale);
+
+    let nextMode: NavLayoutMode = "full";
+    if (effectiveWidth < 1030) {
+      nextMode = "drawer";
+    } else if (effectiveWidth < 1230) {
+      nextMode = "compact";
+    } else {
+      nextMode = "full";
+    }
+
+    setNavMode(nextMode);
+
+    // Post-render DOM overflow safety check: if children still exceed container width, step down automatically
+    window.requestAnimationFrame(() => {
+      const row = headerRowRef.current;
+      if (!row) return;
+      if (row.scrollWidth > row.clientWidth + 2) {
+        setNavMode((current) => (current === "full" ? "compact" : "drawer"));
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    evaluateZoomAndOverflow();
+
+    window.addEventListener("resize", evaluateZoomAndOverflow);
+    window.visualViewport?.addEventListener("resize", evaluateZoomAndOverflow);
+
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && headerRowRef.current) {
+      observer = new ResizeObserver(() => evaluateZoomAndOverflow());
+      observer.observe(headerRowRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", evaluateZoomAndOverflow);
+      window.visualViewport?.removeEventListener("resize", evaluateZoomAndOverflow);
+      observer?.disconnect();
+    };
+  }, [evaluateZoomAndOverflow]);
+
   const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
   const [emergencySubmitted, setEmergencySubmitted] = useState(false);
   const [emergencyForm, setEmergencyForm] = useState({
@@ -74,14 +131,17 @@ export function Header() {
     }
   }
 
+  const isDrawerMode = navMode === "drawer";
+  const isCompactMode = navMode === "compact";
+
   return (
     <>
       {/* Top Emergency Foreclosure / Garnishment Alert Bar */}
-      <div className="bg-gradient-to-r from-red-950 via-navy-900 to-red-950 text-white border-b border-gold-500/30 text-xs py-2 px-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1 bg-red-600 text-white font-bold px-2.5 py-0.5 rounded text-[11px] uppercase tracking-wider shrink-0">
-              <AlertTriangle className="w-3.5 h-3.5" /> Urgent Filing Line
+      <div className="bg-gradient-to-r from-red-950 via-navy-900 to-red-950 text-white border-b border-gold-500/30 text-[12px] leading-snug py-[8px] px-[16px] w-full max-w-full overflow-hidden">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-[10px]">
+          <div className="flex flex-wrap items-center gap-[8px] min-w-0">
+            <span className="inline-flex items-center gap-[4px] bg-red-600 text-white font-bold px-[9px] py-[2px] rounded text-[11px] uppercase tracking-wider shrink-0">
+              <AlertTriangle className="w-[13px] h-[13px]" /> Urgent Filing Line
             </span>
             <span className="text-slate-100 font-medium">
               Facing a <strong>Foreclosure Sale</strong>, <strong>Car Repo</strong>, or <strong>25% Wage Garnishment</strong> this week? Same-day Automatic Stay protection available.
@@ -92,177 +152,198 @@ export function Header() {
               setEmergencySubmitted(false);
               setEmergencyModalOpen(true);
             }}
-            className="text-gold-400 hover:text-gold-300 font-bold underline underline-offset-4 inline-flex items-center gap-1 cursor-pointer whitespace-nowrap ml-auto"
+            className="text-gold-400 hover:text-gold-300 font-bold underline underline-offset-4 inline-flex items-center gap-[4px] cursor-pointer whitespace-nowrap ml-auto text-[12px]"
           >
-            Request Instant Emergency Callback <ArrowRight className="w-3.5 h-3.5" />
+            Request Instant Emergency Callback <ArrowRight className="w-[13px] h-[13px]" />
           </button>
         </div>
       </div>
 
-      {/* Main Sticky Navigation */}
-      <header className="sticky top-0 z-40 w-full bg-navy-950/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5 xl:px-8 h-20 flex items-center justify-between gap-2 xl:gap-4">
+      {/* Main Sticky Navigation (Pixel-locked & Zoom-Aware) */}
+      <header className="sticky top-0 z-40 w-full max-w-full bg-navy-950/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg">
+        <div
+          ref={headerRowRef}
+          className="max-w-7xl w-full mx-auto px-[16px] lg:px-[22px] h-[76px] flex items-center justify-between gap-[10px] min-w-0"
+        >
           {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-2.5 xl:gap-3 shrink-0 group">
-            <div className="w-9 h-9 xl:w-10 xl:h-10 rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-navy-950 font-serif font-bold text-base xl:text-lg shadow-md group-hover:scale-105 transition shrink-0">
+          <Link href="/" className="flex items-center gap-[10px] shrink-0 group min-w-0">
+            <div className="w-[38px] h-[38px] rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-navy-950 font-serif font-bold text-[17px] shadow-md group-hover:scale-105 transition shrink-0">
               RL
             </div>
-            <div className="leading-tight">
-              <div className="flex items-center gap-1.5 xl:gap-2 whitespace-nowrap">
-                <span className="font-serif text-base sm:text-lg xl:text-xl font-bold tracking-tight text-white">
+            <div className="leading-tight min-w-0">
+              <div className="flex items-center gap-[6px] whitespace-nowrap">
+                <span className="font-serif text-[17px] sm:text-[19px] font-bold tracking-tight text-white">
                   RINGGER LAW
                 </span>
-                <span className="text-[9px] xl:text-[10px] font-sans font-bold uppercase tracking-wider bg-gold-500/20 text-gold-300 border border-gold-400/30 px-1.5 xl:px-2 py-0.5 rounded-full whitespace-nowrap">
-                  Est. 1981
-                </span>
+                {!isCompactMode && (
+                  <span className="text-[10px] font-sans font-bold uppercase tracking-wider bg-gold-500/20 text-gold-300 border border-gold-400/30 px-[7px] py-[2px] rounded-full whitespace-nowrap">
+                    Est. 1981
+                  </span>
+                )}
               </div>
-              <p className="text-[10px] xl:text-[11px] text-slate-300 whitespace-nowrap mt-0.5">
-                Louis W. Ringger Jr. <span className="hidden xl:inline">• West TN Bankruptcy</span>
+              <p className="text-[11px] text-slate-300 whitespace-nowrap mt-[2px]">
+                Louis W. Ringger Jr.{!isCompactMode ? " • West TN Bankruptcy" : ""}
               </p>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-3 xl:gap-5 text-[13px] xl:text-sm font-medium text-slate-200">
-            {/* Solutions Dropdown */}
-            <div className="relative group py-6">
+          {/* Desktop Navigation Links (Hidden automatically if browser is zoomed into Drawer mode) */}
+          {!isDrawerMode && (
+            <nav
+              className={`hidden lg:flex items-center ${
+                isCompactMode ? "gap-[12px] text-[13px]" : "gap-[20px] text-[14px]"
+              } font-medium text-slate-200 min-w-0 shrink-0`}
+            >
+              {/* Solutions Dropdown */}
+              <div className="relative group py-[22px]">
+                <Link
+                  href="/solutions"
+                  className="flex items-center gap-[4px] hover:text-gold-400 transition whitespace-nowrap"
+                >
+                  <span>{isCompactMode ? "Solutions" : "Debt Solutions"}</span>
+                  <ChevronDown className="w-[14px] h-[14px] opacity-70 group-hover:rotate-180 transition" />
+                </Link>
+                <div className="absolute left-0 top-full w-[310px] bg-navy-900 border border-white/15 rounded-xl shadow-2xl p-[12px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-gold-400 px-[10px] py-[6px] border-b border-white/10 mb-[4px]">
+                    Bankruptcy &amp; Emergency Protection
+                  </div>
+                  {PRACTICE_AREAS.map((item) => (
+                    <Link
+                      key={item.slug}
+                      href={`/practice/${item.slug}`}
+                      className="block px-[10px] py-[8px] rounded-lg hover:bg-white/10 text-slate-100 hover:text-gold-300 transition text-[12px]"
+                    >
+                      <div className="font-semibold text-[13px]">{item.shortTitle}</div>
+                      <div className="text-slate-400 text-[11px] line-clamp-1">{item.heroHeadline}</div>
+                    </Link>
+                  ))}
+                  <div className="mt-[8px] pt-[8px] border-t border-white/10">
+                    <Link
+                      href="/resources/tennessee-bankruptcy-exemptions-means-test"
+                      className="block px-[10px] py-[8px] rounded-lg bg-gold-500/15 hover:bg-gold-500/25 text-gold-300 font-semibold text-[12px]"
+                    >
+                      📊 TN Exemptions &amp; Means Test Calculator →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Counties Served Dropdown */}
+              <div className="relative group py-[22px]">
+                <button className="flex items-center gap-[4px] hover:text-gold-400 transition whitespace-nowrap cursor-pointer">
+                  <MapPin className="w-[14px] h-[14px] text-gold-400 shrink-0" />
+                  <span>{isCompactMode ? "Counties" : "Counties Served"}</span>
+                  <ChevronDown className="w-[14px] h-[14px] opacity-70 group-hover:rotate-180 transition" />
+                </button>
+                <div className="absolute left-0 top-full w-[280px] bg-navy-900 border border-white/15 rounded-xl shadow-2xl p-[12px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-gold-400 px-[10px] py-[6px] border-b border-white/10 mb-[4px]">
+                    Western District of TN (Eastern Div.)
+                  </div>
+                  {COUNTY_LOCATIONS.map((c) => (
+                    <Link
+                      key={c.slug}
+                      href={`/locations/${c.slug}`}
+                      className="block px-[10px] py-[8px] rounded-lg hover:bg-white/10 text-slate-100 hover:text-gold-300 transition"
+                    >
+                      <div className="font-semibold text-[13px]">{c.countyName}, TN</div>
+                      <div className="text-slate-400 text-[11px]">{c.primaryCities.slice(0, 3).join(", ")}</div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
               <Link
-                href="/solutions"
-                className="flex items-center gap-1 hover:text-gold-400 transition whitespace-nowrap"
+                href="/resources/tennessee-bankruptcy-exemptions-means-test"
+                className="hover:text-gold-400 transition whitespace-nowrap"
               >
-                <span>Debt Solutions</span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition" />
+                {isCompactMode ? "Exemptions" : "TN Exemptions"}
               </Link>
-              <div className="absolute left-0 top-full w-80 bg-navy-900 border border-white/15 rounded-xl shadow-2xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                <div className="text-[11px] font-semibold uppercase tracking-wider text-gold-400 px-3 py-1.5 border-b border-white/10 mb-1">
-                  Bankruptcy &amp; Emergency Protection
+
+              <Link
+                href="/about"
+                className="hover:text-gold-400 transition whitespace-nowrap"
+              >
+                About Us
+              </Link>
+
+              <Link
+                href="/intake"
+                className="flex items-center gap-[4px] text-slate-200 hover:text-gold-400 transition whitespace-nowrap"
+              >
+                <FileCheck className="w-[14px] h-[14px] text-gold-400 shrink-0" />
+                <span>{isCompactMode ? "Intake" : "Client Intake"}</span>
+              </Link>
+
+              <Link
+                href="/contact"
+                className="hover:text-gold-400 transition whitespace-nowrap"
+              >
+                Contact
+              </Link>
+            </nav>
+          )}
+
+          {/* Right Call & Free Consultation CTAs (Desktop / Compact Mode) */}
+          {!isDrawerMode && (
+            <div className="hidden lg:flex items-center gap-[8px] shrink-0">
+              <a
+                href={FIRM_INFO.phoneHref}
+                className={`flex items-center gap-[8px] ${
+                  isCompactMode ? "px-[10px] py-[7px]" : "px-[12px] py-[7px]"
+                } rounded-xl border border-white/15 hover:border-gold-400/60 bg-white/5 transition whitespace-nowrap`}
+              >
+                <div className="w-[28px] h-[28px] rounded-lg bg-gold-500/20 text-gold-400 flex items-center justify-center shrink-0">
+                  <Phone className="w-[14px] h-[14px]" />
                 </div>
-                {PRACTICE_AREAS.map((item) => (
-                  <Link
-                    key={item.slug}
-                    href={`/practice/${item.slug}`}
-                    className="block px-3 py-2 rounded-lg hover:bg-white/10 text-slate-100 hover:text-gold-300 transition text-xs"
-                  >
-                    <div className="font-semibold text-sm">{item.shortTitle}</div>
-                    <div className="text-slate-400 text-[11px] line-clamp-1">{item.heroHeadline}</div>
-                  </Link>
-                ))}
-                <div className="mt-2 pt-2 border-t border-white/10">
-                  <Link
-                    href="/resources/tennessee-bankruptcy-exemptions-means-test"
-                    className="block px-3 py-2 rounded-lg bg-gold-500/15 hover:bg-gold-500/25 text-gold-300 font-semibold text-xs"
-                  >
-                    📊 TN Exemptions &amp; Means Test Calculator →
-                  </Link>
+                <div className="text-left leading-tight">
+                  {!isCompactMode && (
+                    <div className="text-[9px] uppercase tracking-wider text-gold-400 font-bold whitespace-nowrap">
+                      Call Jackson Office
+                    </div>
+                  )}
+                  <div className="text-[13px] font-extrabold text-white whitespace-nowrap">
+                    {FIRM_INFO.phoneFormatted}
+                  </div>
                 </div>
-              </div>
+              </a>
+
+              <Link
+                href="/book-online"
+                className="bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-navy-950 font-extrabold text-[13px] px-[14px] py-[10px] rounded-xl shadow-lg shadow-gold-500/20 flex items-center gap-[6px] whitespace-nowrap transition transform hover:-translate-y-0.5"
+              >
+                <Calendar className="w-[14px] h-[14px] shrink-0" />
+                <span>{isCompactMode ? "Free Consult" : "Free Consultation"}</span>
+              </Link>
             </div>
+          )}
 
-            {/* Counties Served Dropdown */}
-            <div className="relative group py-6">
-              <button className="flex items-center gap-1 hover:text-gold-400 transition whitespace-nowrap cursor-pointer">
-                <MapPin className="w-3.5 h-3.5 text-gold-400 shrink-0" />
-                <span className="hidden xl:inline">Counties Served</span>
-                <span className="xl:hidden">Counties</span>
-                <ChevronDown className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition" />
-              </button>
-              <div className="absolute left-0 top-full w-72 bg-navy-900 border border-white/15 rounded-xl shadow-2xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
-                <div className="text-[11px] font-semibold uppercase tracking-wider text-gold-400 px-3 py-1.5 border-b border-white/10 mb-1">
-                  Western District of TN (Eastern Div.)
-                </div>
-                {COUNTY_LOCATIONS.map((c) => (
-                  <Link
-                    key={c.slug}
-                    href={`/locations/${c.slug}`}
-                    className="block px-3 py-2 rounded-lg hover:bg-white/10 text-slate-100 hover:text-gold-300 transition"
-                  >
-                    <div className="font-semibold text-sm">{c.countyName}, TN</div>
-                    <div className="text-slate-400 text-[11px]">{c.primaryCities.slice(0, 3).join(", ")}</div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            <Link
-              href="/resources/tennessee-bankruptcy-exemptions-means-test"
-              className="hover:text-gold-400 transition whitespace-nowrap"
-            >
-              TN Exemptions
-            </Link>
-
-            <Link
-              href="/about"
-              className="hover:text-gold-400 transition whitespace-nowrap"
-            >
-              About Us
-            </Link>
-
-            <Link
-              href="/intake"
-              className="flex items-center gap-1 text-slate-200 hover:text-gold-400 transition whitespace-nowrap"
-            >
-              <FileCheck className="w-3.5 h-3.5 text-gold-400 shrink-0" />
-              <span className="hidden xl:inline">Client Intake</span>
-              <span className="xl:hidden">Intake</span>
-            </Link>
-
-            <Link
-              href="/contact"
-              className="hover:text-gold-400 transition whitespace-nowrap"
-            >
-              Contact
-            </Link>
-          </nav>
-
-          {/* Right Call & Free Consultation CTAs */}
-          <div className="hidden lg:flex items-center gap-2 xl:gap-2.5 shrink-0">
+          {/* Mobile / Zoomed-Browser Hamburger & Quick Actions */}
+          <div className={`${isDrawerMode ? "flex" : "flex lg:hidden"} items-center gap-[8px] shrink-0`}>
             <a
               href={FIRM_INFO.phoneHref}
-              className="flex items-center gap-2 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-xl border border-white/15 hover:border-gold-400/60 bg-white/5 transition whitespace-nowrap"
+              className="bg-gold-500 text-navy-950 font-extrabold text-[12px] px-[12px] py-[8px] rounded-lg flex items-center gap-[5px] whitespace-nowrap"
             >
-              <div className="w-7 h-7 xl:w-8 xl:h-8 rounded-lg bg-gold-500/20 text-gold-400 flex items-center justify-center shrink-0">
-                <Phone className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
-              </div>
-              <div className="text-left leading-tight">
-                <div className="text-[9px] xl:text-[10px] uppercase tracking-wider text-gold-400 font-bold whitespace-nowrap">
-                  Call Jackson Office
-                </div>
-                <div className="text-xs xl:text-sm font-extrabold text-white whitespace-nowrap">
-                  {FIRM_INFO.phoneFormatted}
-                </div>
-              </div>
+              <Phone className="w-[14px] h-[14px]" /> {FIRM_INFO.phoneFormatted}
             </a>
-
             <Link
               href="/book-online"
-              className="bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-navy-950 font-extrabold text-xs xl:text-sm px-3 xl:px-4 py-2.5 xl:py-3 rounded-xl shadow-lg shadow-gold-500/20 flex items-center gap-1.5 xl:gap-2 whitespace-nowrap transition transform hover:-translate-y-0.5"
+              className="hidden sm:inline-flex bg-white/10 hover:bg-white/15 border border-gold-400/40 text-gold-300 font-bold text-[12px] px-[12px] py-[8px] rounded-lg items-center gap-[5px] whitespace-nowrap"
             >
-              <Calendar className="w-3.5 h-3.5 xl:w-4 xl:h-4 shrink-0" />
-              <span>Free Consultation</span>
+              <Calendar className="w-[14px] h-[14px]" /> Free Consult
             </Link>
-          </div>
-
-          {/* Mobile Hamburger Button */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <a
-              href={FIRM_INFO.phoneHref}
-              className="bg-gold-500 text-navy-950 font-bold text-xs px-3 py-2 rounded-lg flex items-center gap-1 whitespace-nowrap"
-            >
-              <Phone className="w-3.5 h-3.5" /> Call Now
-            </a>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg bg-white/10 text-white"
+              className="p-[8px] rounded-lg bg-white/10 hover:bg-white/20 text-white cursor-pointer"
               aria-label="Toggle Menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-[22px] h-[22px]" /> : <Menu className="w-[22px] h-[22px]" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Drawer */}
+        {/* Mobile / Zoomed-Browser Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-navy-900 border-t border-white/10 px-4 pt-4 pb-6 space-y-4 max-h-[85vh] overflow-y-auto">
+          <div className="bg-navy-900 border-t border-white/10 px-4 pt-4 pb-6 space-y-4 max-h-[85vh] overflow-y-auto">
             <div className="grid grid-cols-2 gap-2">
               <Link
                 href="/book-online"
