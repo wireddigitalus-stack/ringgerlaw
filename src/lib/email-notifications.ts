@@ -1,6 +1,16 @@
 import { IntakeRecord, LeadRecord } from "@/lib/db";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
+const RESEND_DOMAINS_URL = "https://api.resend.com/domains";
+
+export interface EmailDispatchResult {
+  configured: boolean;
+  sent: boolean;
+  fromUsed?: string;
+  recipients?: string[];
+  resendId?: string;
+  error?: string;
+}
 
 function getRecipientList(): string[] {
   const raw = process.env.LEAD_NOTIFICATION_EMAIL || "bankruptcy@ringgerlaw.com";
@@ -10,25 +20,66 @@ function getRecipientList(): string[] {
     .filter(Boolean);
 }
 
+async function discoverVerifiedResendSender(apiKey: string): Promise<string[]> {
+  const candidates: string[] = [];
+  if (process.env.RESEND_FROM_EMAIL) {
+    candidates.push(process.env.RESEND_FROM_EMAIL);
+  }
+
+  try {
+    const res = await fetch(RESEND_DOMAINS_URL, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+      },
+      cache: "no-store",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const domains: Array<{ name: string; status: string }> = data?.data || [];
+      const verified = domains.filter((d) => d.status === "verified");
+      // Prefer ringgerlaw.com if verified, otherwise use any verified domain in the account
+      const ringgerVerified = verified.find((d) => d.name.includes("ringgerlaw.com"));
+      if (ringgerVerified) {
+        candidates.push(`Ringger Law Lead Alerts <leads@${ringgerVerified.name}>`);
+      }
+      for (const d of verified) {
+        if (!d.name.includes("ringgerlaw.com")) {
+          candidates.push(`Ringger Law Lead Alerts <leads@${d.name}>`);
+        }
+      }
+    }
+  } catch {
+    // Ignore domain discovery error and fall back to static list
+  }
+
+  candidates.push(
+    "Ringger Law Lead Alerts <leads@ringgerlaw.com>",
+    "Ringger Law Lead Alerts <leads@mail.ringgerlaw.com>",
+    "Ringger Law Lead Alerts <leads@alerts.ringgerlaw.com>",
+    "Ringger Law Lead Alerts <onboarding@resend.dev>"
+  );
+
+  return Array.from(new Set(candidates));
+}
+
 async function sendResendEmail(payload: {
   subject: string;
   html: string;
   replyTo?: string;
-}): Promise<void> {
+}): Promise<EmailDispatchResult> {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
-    return;
+    return {
+      configured: false,
+      sent: false,
+      error: "RESEND_API_KEY is not set on this Vercel project environment",
+    };
   }
 
   const to = getRecipientList();
-  const candidateSenders = process.env.RESEND_FROM_EMAIL
-    ? [process.env.RESEND_FROM_EMAIL]
-    : [
-        "Ringger Law Lead Alerts <leads@alerts.ringgerlaw.com>",
-        "Ringger Law Lead Alerts <leads@mail.ringgerlaw.com>",
-        "Ringger Law Lead Alerts <leads@ringgerlaw.com>",
-        "Ringger Law Lead Alerts <onboarding@resend.dev>",
-      ];
+  const candidateSenders = await discoverVerifiedResendSender(apiKey);
+  let lastError = "";
 
   try {
     for (const fromAddress of candidateSenders) {
@@ -46,16 +97,32 @@ async function sendResendEmail(payload: {
           html: payload.html,
         }),
       });
+
+      const body = await res.json().catch(() => ({}));
       if (res.ok) {
-        break;
+        return {
+          configured: true,
+          sent: true,
+          fromUsed: fromAddress,
+          recipients: to,
+          resendId: body?.id,
+        };
       }
+      lastError = `${res.status}: ${body?.message || JSON.stringify(body)}`;
     }
   } catch (err) {
-    console.error("Failed to send Resend email notification:", err);
+    lastError = err instanceof Error ? err.message : String(err);
   }
+
+  return {
+    configured: true,
+    sent: false,
+    recipients: to,
+    error: lastError,
+  };
 }
 
-export async function sendNewLeadNotification(lead: LeadRecord): Promise<void> {
+export async function sendNewLeadNotification(lead: LeadRecord): Promise<EmailDispatchResult> {
   const fullName = `${lead.firstName} ${lead.lastName || ""}`.trim();
   const isEmergency = lead.urgency === "EMERGENCY_FORECLOSURE_REPO";
   const isGarnishment = lead.urgency === "WAGE_GARNISHMENT";
@@ -163,14 +230,14 @@ export async function sendNewLeadNotification(lead: LeadRecord): Promise<void> {
     </div>
   `;
 
-  await sendResendEmail({
+  return await sendResendEmail({
     subject,
     html,
     replyTo: lead.email || undefined,
   });
 }
 
-export async function sendNewIntakeNotification(intake: IntakeRecord): Promise<void> {
+export async function sendNewIntakeNotification(intake: IntakeRecord): Promise<EmailDispatchResult> {
   const subject = `📋 Signed 5-Step Court Intake Packet: ${intake.fullName}`;
   const cleanPhone = (intake.phone || "").replace(/\D/g, "");
 
@@ -233,7 +300,7 @@ export async function sendNewIntakeNotification(intake: IntakeRecord): Promise<v
     </div>
   `;
 
-  await sendResendEmail({
+  return await sendResendEmail({
     subject,
     html,
     replyTo: intake.email || undefined,

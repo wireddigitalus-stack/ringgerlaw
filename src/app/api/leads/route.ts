@@ -17,6 +17,8 @@ export async function GET() {
     analytics: db.analytics,
     storageEngine: db.storageEngine,
     supabaseUrl: db.supabaseUrl,
+    resendConfigured: Boolean(process.env.RESEND_API_KEY),
+    vercelProjectUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || "local",
   });
 }
 
@@ -50,9 +52,9 @@ export async function POST(req: NextRequest) {
       deviceType: body.deviceType || "Desktop",
     });
 
-    await sendNewLeadNotification(created);
+    const emailDispatch = await sendNewLeadNotification(created);
 
-    return NextResponse.json({ success: true, lead: created });
+    return NextResponse.json({ success: true, lead: created, emailDispatch });
   } catch (err) {
     console.error("Error saving lead:", err);
     return NextResponse.json({ success: false, error: "Invalid request" }, { status: 400 });
