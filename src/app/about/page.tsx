@@ -41,7 +41,7 @@ export default function AboutPage() {
 
             <div className="relative bg-gradient-to-br from-[#1b0c33] via-navy-900 to-[#120722] border border-[#A8E028]/35 rounded-3xl overflow-hidden shadow-2xl">
               <div className="grid grid-cols-1 sm:grid-cols-12 items-end">
-                <div className="sm:col-span-7 p-6 sm:p-7 space-y-3 self-center z-10">
+                <div className="sm:col-span-7 p-6 sm:p-7 pb-2 sm:pb-7 space-y-3 self-center z-10">
                   <div className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
                     Louis W. Ringger Jr.
                   </div>
@@ -52,12 +52,12 @@ export default function AboutPage() {
                     367 N. Parkway, Suite 1, Jackson, TN 38305 • Direct Office: {FIRM_INFO.phoneFormatted}
                   </p>
                 </div>
-                <div className="sm:col-span-5 relative flex items-end justify-end self-end pr-0 pb-0 mr-0 ml-auto w-full">
+                <div className="sm:col-span-5 relative flex items-end justify-end self-end pr-0 pb-0 mr-0 ml-auto w-full -mt-2 sm:mt-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="https://static.wixstatic.com/media/44d8da_50b497936b394f05978c2296d23a252d~mv2.png/v1/fill/w_1260,h_1680,al_c,q_90/LR%20edit.png"
                     alt="Louis W. Ringger Jr. — Attorney at Law"
-                    className="w-[220px] sm:w-[250px] md:w-[280px] max-w-none h-auto object-contain object-right-bottom drop-shadow-[0_14px_28px_rgba(0,0,0,0.85)] select-none ml-auto mr-0 block"
+                    className="w-[82%] max-w-[360px] sm:w-[115%] sm:max-w-none lg:w-[122%] h-auto object-contain object-right-bottom drop-shadow-[0_14px_28px_rgba(0,0,0,0.85)] select-none ml-auto mr-0 block"
                   />
                 </div>
               </div>

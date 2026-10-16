@@ -164,7 +164,7 @@ export default function HomePage() {
             <div className="relative bg-gradient-to-br from-[#1b0c33] via-navy-900 to-[#120722] border border-[#A8E028]/35 rounded-3xl overflow-hidden shadow-2xl">
               <div className="grid grid-cols-1 sm:grid-cols-12 items-end">
                 {/* Card Left Copy */}
-                <div className="sm:col-span-7 p-6 sm:p-8 space-y-4 self-center z-10">
+                <div className="sm:col-span-7 p-6 sm:p-8 pb-2 sm:pb-8 space-y-4 self-center z-10">
                   <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#A8E028] bg-black/40 border border-[#A8E028]/30 px-3 py-1 rounded-full">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#A8E028]" /> Est. 1981 • 45+ Years Experience
                   </span>
@@ -178,7 +178,7 @@ export default function HomePage() {
                     Founded by <strong>Bill Ringger in 1981</strong>, The Law Offices of Louis W. Ringger has helped thousands of Jackson and West Tennessee families eliminate debt, stop foreclosures, and gain a fresh start.
                   </p>
 
-                  <div className="pt-1">
+                  <div className="hidden sm:block pt-1">
                     <div className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
                       Louis W. Ringger Jr.
                     </div>
@@ -188,13 +188,23 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                {/* Card Right Image: Cutout Portrait Justified Flush Right & Bottom Inside the Card */}
-                <div className="sm:col-span-5 relative flex items-end justify-end self-end pr-0 pb-0 mr-0 ml-auto w-full">
+                {/* Card Right Image: Responsive Cutout Portrait Filling Card on Mobile & Justified Flush Right/Bottom */}
+                <div className="sm:col-span-5 relative flex items-end justify-end self-end pr-0 pb-0 mr-0 ml-auto w-full -mt-2 sm:mt-0">
+                  {/* Mobile Name Overlay on Bottom-Left of the Image Row so Mobile Card Feels Full & Balanced */}
+                  <div className="sm:hidden absolute bottom-5 left-6 z-20 drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)]">
+                    <div className="text-xl font-extrabold text-white tracking-tight leading-tight">
+                      Louis W. Ringger Jr.
+                    </div>
+                    <div className="text-sm font-extrabold text-[#A8E028] leading-tight">
+                      Attorney at Law
+                    </div>
+                  </div>
+
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="https://static.wixstatic.com/media/44d8da_50b497936b394f05978c2296d23a252d~mv2.png/v1/fill/w_1260,h_1680,al_c,q_90/LR%20edit.png"
                     alt="Louis W. Ringger Jr. — Attorney at Law in Jackson, Tennessee"
-                    className="w-[240px] sm:w-[270px] md:w-[300px] lg:w-[310px] max-w-none h-auto object-contain object-right-bottom drop-shadow-[0_14px_28px_rgba(0,0,0,0.85)] select-none ml-auto mr-0 block"
+                    className="w-[82%] max-w-[360px] sm:w-[115%] sm:max-w-none lg:w-[122%] h-auto object-contain object-right-bottom drop-shadow-[0_14px_28px_rgba(0,0,0,0.85)] select-none ml-auto mr-0 block"
                   />
                 </div>
               </div>
