@@ -7,6 +7,7 @@ import {
   updateLeadStatusAsync,
   LeadStatus,
 } from "@/lib/db";
+import { sendNewLeadNotification } from "@/lib/email-notifications";
 
 export async function GET() {
   const db = await getDbAsync();
@@ -48,6 +49,9 @@ export async function POST(req: NextRequest) {
       clickId: body.clickId || "",
       deviceType: body.deviceType || "Desktop",
     });
+
+    await sendNewLeadNotification(created);
+
     return NextResponse.json({ success: true, lead: created });
   } catch (err) {
     console.error("Error saving lead:", err);
