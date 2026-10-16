@@ -194,13 +194,17 @@ export function FastCaptureCard({
               </div>
             </div>
           ) : (
-            <form onSubmit={handleFastSubmit} className="space-y-3.5">
+            <form onSubmit={handleFastSubmit} autoComplete="on" spellCheck={true} className="space-y-3.5">
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
                   Your Full Name *
                 </label>
                 <input
                   type="text"
+                  name="name"
+                  autoComplete="name"
+                  spellCheck={true}
+                  autoCorrect="on"
                   required
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
@@ -216,6 +220,8 @@ export function FastCaptureCard({
                   </label>
                   <input
                     type="tel"
+                    name="phone"
+                    autoComplete="tel"
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -229,6 +235,9 @@ export function FastCaptureCard({
                   </label>
                   <input
                     type="email"
+                    name="email"
+                    autoComplete="email"
+                    spellCheck={false}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"

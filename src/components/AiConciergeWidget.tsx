@@ -178,12 +178,16 @@ export function AiConciergeWidget() {
                     </span>
                   </div>
                 ) : (
-                  <form onSubmit={submitChatLead} className="space-y-2">
+                  <form onSubmit={submitChatLead} autoComplete="on" spellCheck={true} className="space-y-2">
                     <div className="text-xs font-bold text-gold-400 flex items-center gap-1.5">
                       <ShieldAlert className="w-4 h-4" /> Want Louis Ringger&apos;s Office to Call You Free?
                     </div>
                     <input
                       type="text"
+                      name="firstName"
+                      autoComplete="given-name"
+                      spellCheck={true}
+                      autoCorrect="on"
                       required
                       placeholder="Your First Name *"
                       value={leadForm.firstName}
@@ -192,6 +196,8 @@ export function AiConciergeWidget() {
                     />
                     <input
                       type="tel"
+                      name="phone"
+                      autoComplete="tel"
                       required
                       placeholder="Best Phone Number *"
                       value={leadForm.phone}
@@ -216,10 +222,14 @@ export function AiConciergeWidget() {
               e.preventDefault();
               sendPrompt(input);
             }}
+            spellCheck={true}
             className="p-3 bg-white border-t border-slate-200 flex items-center gap-2"
           >
             <input
               type="text"
+              name="chatMessage"
+              spellCheck={true}
+              autoCorrect="on"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask a Tennessee bankruptcy question..."

@@ -115,7 +115,7 @@ export default function BookOnlinePage() {
               </div>
             </div>
           ) : (
-            <form onSubmit={handleBook} className="space-y-5">
+            <form onSubmit={handleBook} autoComplete="on" spellCheck={true} className="space-y-5">
               {/* Consultation Format */}
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-700 mb-2">
@@ -156,6 +156,7 @@ export default function BookOnlinePage() {
                   </label>
                   <input
                     type="date"
+                    name="preferredDate"
                     required
                     value={form.preferredDate}
                     onChange={(e) => setForm({ ...form, preferredDate: e.target.value })}
@@ -167,6 +168,7 @@ export default function BookOnlinePage() {
                     3. Preferred Time Slot *
                   </label>
                   <select
+                    name="preferredTime"
                     value={form.preferredTime}
                     onChange={(e) => setForm({ ...form, preferredTime: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm"
@@ -188,6 +190,10 @@ export default function BookOnlinePage() {
                   </label>
                   <input
                     type="text"
+                    name="firstName"
+                    autoComplete="given-name"
+                    spellCheck={true}
+                    autoCorrect="on"
                     required
                     value={form.firstName}
                     onChange={(e) => setForm({ ...form, firstName: e.target.value })}
@@ -200,6 +206,10 @@ export default function BookOnlinePage() {
                   </label>
                   <input
                     type="text"
+                    name="lastName"
+                    autoComplete="family-name"
+                    spellCheck={true}
+                    autoCorrect="on"
                     required
                     value={form.lastName}
                     onChange={(e) => setForm({ ...form, lastName: e.target.value })}
@@ -215,6 +225,8 @@ export default function BookOnlinePage() {
                   </label>
                   <input
                     type="tel"
+                    name="phone"
+                    autoComplete="tel"
                     required
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -228,6 +240,9 @@ export default function BookOnlinePage() {
                   </label>
                   <input
                     type="email"
+                    name="email"
+                    autoComplete="email"
+                    spellCheck={false}
                     required
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -243,6 +258,7 @@ export default function BookOnlinePage() {
                     Primary Debt Relief Goal
                   </label>
                   <select
+                    name="primaryConcern"
                     value={form.primaryConcern}
                     onChange={(e) => setForm({ ...form, primaryConcern: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm"
@@ -258,6 +274,7 @@ export default function BookOnlinePage() {
                     West Tennessee County
                   </label>
                   <select
+                    name="county"
                     value={form.county}
                     onChange={(e) => setForm({ ...form, county: e.target.value })}
                     className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm"
@@ -278,6 +295,9 @@ export default function BookOnlinePage() {
                 </label>
                 <textarea
                   rows={2}
+                  name="notes"
+                  spellCheck={true}
+                  autoCorrect="on"
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   placeholder="Tell us briefly about your situation or any urgent court/sale dates..."

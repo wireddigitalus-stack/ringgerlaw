@@ -344,7 +344,7 @@ export function Header() {
                 </a>
               </div>
             ) : (
-              <form onSubmit={handleEmergencySubmit} className="space-y-4">
+              <form onSubmit={handleEmergencySubmit} autoComplete="on" spellCheck={true} className="space-y-4">
                 <div className="inline-flex items-center gap-1.5 bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full">
                   <AlertTriangle className="w-4 h-4" /> Priority Emergency Filing Triage
                 </div>
@@ -359,6 +359,10 @@ export function Header() {
                   <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Your Name *</label>
                   <input
                     type="text"
+                    name="name"
+                    autoComplete="name"
+                    spellCheck={true}
+                    autoCorrect="on"
                     required
                     value={emergencyForm.firstName}
                     onChange={(e) => setEmergencyForm({ ...emergencyForm, firstName: e.target.value })}
@@ -371,6 +375,8 @@ export function Header() {
                   <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Best Phone Number *</label>
                   <input
                     type="tel"
+                    name="phone"
+                    autoComplete="tel"
                     required
                     value={emergencyForm.phone}
                     onChange={(e) => setEmergencyForm({ ...emergencyForm, phone: e.target.value })}

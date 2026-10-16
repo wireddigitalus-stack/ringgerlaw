@@ -165,7 +165,7 @@ export default function ClientIntakePortalPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6">
+          <form onSubmit={handleSubmit} autoComplete="on" spellCheck={true} className="p-6 sm:p-8 space-y-6">
             {/* STEP 1: PERSONAL & MARITAL */}
             {step === 1 && (
               <div className="space-y-4">
@@ -180,6 +180,10 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="name"
+                      autoComplete="name"
+                      spellCheck={true}
+                      autoCorrect="on"
                       required
                       value={form.fullName}
                       onChange={(e) => setForm({ ...form, fullName: e.target.value })}
@@ -193,6 +197,8 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="tel"
+                      name="phone"
+                      autoComplete="tel"
                       required
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -209,6 +215,9 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="email"
+                      name="email"
+                      autoComplete="email"
+                      spellCheck={false}
                       required
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -222,6 +231,8 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="date"
+                      name="bday"
+                      autoComplete="bday"
                       required
                       value={form.birthday}
                       onChange={(e) => setForm({ ...form, birthday: e.target.value })}
@@ -237,6 +248,10 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="street-address"
+                      autoComplete="street-address"
+                      spellCheck={true}
+                      autoCorrect="on"
                       required
                       value={form.mailingAddress}
                       onChange={(e) => setForm({ ...form, mailingAddress: e.target.value })}
@@ -250,6 +265,8 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="ssnLast4"
+                      inputMode="numeric"
                       maxLength={4}
                       value={form.ssnLast4}
                       onChange={(e) => setForm({ ...form, ssnLast4: e.target.value })}
@@ -265,6 +282,7 @@ export default function ClientIntakePortalPage() {
                       Marital Status *
                     </label>
                     <select
+                      name="maritalStatus"
                       value={form.maritalStatus}
                       onChange={(e) =>
                         setForm({
@@ -287,6 +305,7 @@ export default function ClientIntakePortalPage() {
                       Are You Filing Jointly With a Spouse?
                     </label>
                     <select
+                      name="filingWithSpouse"
                       value={form.filingWithSpouse ? "yes" : "no"}
                       onChange={(e) => setForm({ ...form, filingWithSpouse: e.target.value === "yes" })}
                       className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm"
@@ -305,6 +324,9 @@ export default function ClientIntakePortalPage() {
                       </label>
                       <input
                         type="text"
+                        name="spouseName"
+                        spellCheck={true}
+                        autoCorrect="on"
                         value={form.spouseName}
                         onChange={(e) => setForm({ ...form, spouseName: e.target.value })}
                         className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white"
@@ -316,6 +338,7 @@ export default function ClientIntakePortalPage() {
                       </label>
                       <input
                         type="date"
+                        name="spouseBirthday"
                         value={form.spouseBirthday}
                         onChange={(e) => setForm({ ...form, spouseBirthday: e.target.value })}
                         className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm bg-white"
@@ -331,6 +354,9 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="dependents"
+                      spellCheck={true}
+                      autoCorrect="on"
                       value={form.dependents}
                       onChange={(e) => setForm({ ...form, dependents: e.target.value })}
                       placeholder="e.g., 2 children (ages 7 and 11)"
@@ -342,6 +368,7 @@ export default function ClientIntakePortalPage() {
                       Filed Bankruptcy in the Last 10 Years?
                     </label>
                     <select
+                      name="priorBankruptcyLast10Years"
                       value={form.priorBankruptcyLast10Years ? "yes" : "no"}
                       onChange={(e) =>
                         setForm({ ...form, priorBankruptcyLast10Years: e.target.value === "yes" })
@@ -379,6 +406,9 @@ export default function ClientIntakePortalPage() {
                   </label>
                   <textarea
                     rows={2}
+                    name="realEstateOwned"
+                    spellCheck={true}
+                    autoCorrect="on"
                     value={form.realEstateOwned}
                     onChange={(e) => setForm({ ...form, realEstateOwned: e.target.value })}
                     placeholder="e.g., Primary Residence in Jackson TN — Rocket Mortgage balance $135,000 (or type 'None / Renting')"
@@ -392,6 +422,7 @@ export default function ClientIntakePortalPage() {
                       If You Have a Mortgage, Are Payments Current?
                     </label>
                     <select
+                      name="mortgagePaymentsCurrent"
                       value={form.mortgagePaymentsCurrent}
                       onChange={(e) =>
                         setForm({
@@ -412,6 +443,7 @@ export default function ClientIntakePortalPage() {
                       Have You Received a Notice That Your House Is Going to Be Sold (Foreclosure)?
                     </label>
                     <select
+                      name="receivedForeclosureNotice"
                       value={form.receivedForeclosureNotice ? "yes" : "no"}
                       onChange={(e) =>
                         setForm({ ...form, receivedForeclosureNotice: e.target.value === "yes" })
@@ -430,6 +462,9 @@ export default function ClientIntakePortalPage() {
                   </label>
                   <textarea
                     rows={2}
+                    name="vehiclesOwned"
+                    spellCheck={true}
+                    autoCorrect="on"
                     value={form.vehiclesOwned}
                     onChange={(e) => setForm({ ...form, vehiclesOwned: e.target.value })}
                     placeholder="e.g., 2019 Ford F-150 (Financed with Ford Credit, $14k owed); 2014 Honda Civic (Paid for)"
@@ -443,6 +478,9 @@ export default function ClientIntakePortalPage() {
                   </label>
                   <input
                     type="text"
+                    name="recreationalVehicles"
+                    spellCheck={true}
+                    autoCorrect="on"
                     value={form.recreationalVehicles}
                     onChange={(e) => setForm({ ...form, recreationalVehicles: e.target.value })}
                     placeholder="None (or list details)"
@@ -482,6 +520,7 @@ export default function ClientIntakePortalPage() {
                       Do You or Your Spouse Pay Child Support or Alimony?
                     </label>
                     <select
+                      name="paysChildSupportOrAlimony"
                       value={form.paysChildSupportOrAlimony ? "yes" : "no"}
                       onChange={(e) =>
                         setForm({ ...form, paysChildSupportOrAlimony: e.target.value === "yes" })
@@ -498,6 +537,9 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="supportRecipientDetails"
+                      spellCheck={true}
+                      autoCorrect="on"
                       value={form.supportRecipientDetails}
                       onChange={(e) => setForm({ ...form, supportRecipientDetails: e.target.value })}
                       placeholder="Parent / Ex-Spouse Name & Monthly Amount"
@@ -512,6 +554,7 @@ export default function ClientIntakePortalPage() {
                       Do You Have Court Judgments, Garnishments, or Liens Against You?
                     </label>
                     <select
+                      name="hasCourtJudgmentsOrLiens"
                       value={form.hasCourtJudgmentsOrLiens ? "yes" : "no"}
                       onChange={(e) =>
                         setForm({ ...form, hasCourtJudgmentsOrLiens: e.target.value === "yes" })
@@ -528,6 +571,9 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="judgmentDetails"
+                      spellCheck={true}
+                      autoCorrect="on"
                       value={form.judgmentDetails}
                       onChange={(e) => setForm({ ...form, judgmentDetails: e.target.value })}
                       placeholder="Creditor Name & Court Case Info"
@@ -542,6 +588,9 @@ export default function ClientIntakePortalPage() {
                   </label>
                   <textarea
                     rows={3}
+                    name="creditCardsList"
+                    spellCheck={true}
+                    autoCorrect="on"
                     value={form.creditCardsList}
                     onChange={(e) => setForm({ ...form, creditCardsList: e.target.value })}
                     placeholder="e.g., Capital One ($5,200), West TN Healthcare Medical ($8,400), Discover ($6,000)..."
@@ -556,6 +605,9 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="cashAdvanceLoans"
+                      spellCheck={true}
+                      autoCorrect="on"
                       value={form.cashAdvanceLoans}
                       onChange={(e) => setForm({ ...form, cashAdvanceLoans: e.target.value })}
                       placeholder="e.g., Advance Financial ($1,500)"
@@ -568,6 +620,9 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="unpaidTaxes"
+                      spellCheck={true}
+                      autoCorrect="on"
                       value={form.unpaidTaxes}
                       onChange={(e) => setForm({ ...form, unpaidTaxes: e.target.value })}
                       placeholder="None (or years/amounts)"
@@ -580,6 +635,9 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="rentToOwnItems"
+                      spellCheck={true}
+                      autoCorrect="on"
                       value={form.rentToOwnItems}
                       onChange={(e) => setForm({ ...form, rentToOwnItems: e.target.value })}
                       placeholder="None (or Aaron's / Rent-A-Center)"
@@ -641,6 +699,8 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="grossMonthlyIncome"
+                      spellCheck={true}
                       value={form.grossMonthlyIncome}
                       onChange={(e) => setForm({ ...form, grossMonthlyIncome: e.target.value })}
                       placeholder="e.g., $3,600/mo"
@@ -653,6 +713,9 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="otherIncomeSources"
+                      spellCheck={true}
+                      autoCorrect="on"
                       value={form.otherIncomeSources}
                       onChange={(e) => setForm({ ...form, otherIncomeSources: e.target.value })}
                       placeholder="None (or list source/amount)"
@@ -668,6 +731,7 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="rentOrMortgageMonthly"
                       value={form.rentOrMortgageMonthly}
                       onChange={(e) => setForm({ ...form, rentOrMortgageMonthly: e.target.value })}
                       placeholder="e.g., $1,250"
@@ -680,6 +744,7 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="monthlyFoodExpense"
                       value={form.monthlyFoodExpense}
                       onChange={(e) => setForm({ ...form, monthlyFoodExpense: e.target.value })}
                       placeholder="e.g., $750"
@@ -692,6 +757,7 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="monthlyUtilitiesAndPhone"
                       value={form.monthlyUtilitiesAndPhone}
                       onChange={(e) => setForm({ ...form, monthlyUtilitiesAndPhone: e.target.value })}
                       placeholder="e.g., $390"
@@ -707,6 +773,7 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="monthlyCarPayments"
                       value={form.monthlyCarPayments}
                       onChange={(e) => setForm({ ...form, monthlyCarPayments: e.target.value })}
                       placeholder="e.g., $420"
@@ -719,6 +786,7 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="monthlyTransportationExpense"
                       value={form.monthlyTransportationExpense}
                       onChange={(e) =>
                         setForm({ ...form, monthlyTransportationExpense: e.target.value })
@@ -733,6 +801,7 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="monthlyMedicalExpense"
                       value={form.monthlyMedicalExpense}
                       onChange={(e) => setForm({ ...form, monthlyMedicalExpense: e.target.value })}
                       placeholder="e.g., $150"
@@ -818,6 +887,10 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="name"
+                      autoComplete="name"
+                      spellCheck={true}
+                      autoCorrect="on"
                       required
                       value={form.debtorSignature}
                       onChange={(e) => setForm({ ...form, debtorSignature: e.target.value })}
@@ -831,6 +904,9 @@ export default function ClientIntakePortalPage() {
                     </label>
                     <input
                       type="text"
+                      name="coDebtorSignature"
+                      spellCheck={true}
+                      autoCorrect="on"
                       value={form.coDebtorSignature}
                       onChange={(e) => setForm({ ...form, coDebtorSignature: e.target.value })}
                       placeholder="Optional Spouse Signature"
