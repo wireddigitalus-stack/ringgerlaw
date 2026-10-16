@@ -52,7 +52,7 @@ export const FIRM_INFO = {
   phone: "731-421-1501",
   phoneFormatted: "(731) 421-1501",
   phoneHref: "tel:7314211501",
-  email: "info@ringgerlaw.com",
+  email: "bankruptcy@ringgerlaw.com",
   address: {
     street: "367 N. Parkway, Suite 1",
     city: "Jackson",

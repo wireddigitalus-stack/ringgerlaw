@@ -3,7 +3,7 @@ import { IntakeRecord, LeadRecord } from "@/lib/db";
 const RESEND_API_URL = "https://api.resend.com/emails";
 
 function getRecipientList(): string[] {
-  const raw = process.env.LEAD_NOTIFICATION_EMAIL || "info@ringgerlaw.com";
+  const raw = process.env.LEAD_NOTIFICATION_EMAIL || "bankruptcy@ringgerlaw.com";
   return raw
     .split(",")
     .map((e) => e.trim())
@@ -21,41 +21,34 @@ async function sendResendEmail(payload: {
   }
 
   const to = getRecipientList();
-  const primaryFrom =
-    process.env.RESEND_FROM_EMAIL || "Ringger Law Lead Alerts <leads@ringgerlaw.com>";
+  const candidateSenders = process.env.RESEND_FROM_EMAIL
+    ? [process.env.RESEND_FROM_EMAIL]
+    : [
+        "Ringger Law Lead Alerts <leads@alerts.ringgerlaw.com>",
+        "Ringger Law Lead Alerts <leads@mail.ringgerlaw.com>",
+        "Ringger Law Lead Alerts <leads@ringgerlaw.com>",
+        "Ringger Law Lead Alerts <onboarding@resend.dev>",
+      ];
 
   try {
-    const res = await fetch(RESEND_API_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: primaryFrom,
-        to,
-        reply_to: payload.replyTo || undefined,
-        subject: payload.subject,
-        html: payload.html,
-      }),
-    });
-
-    // If ringgerlaw.com domain isn't verified in Resend yet, automatically fallback to onboarding@resend.dev
-    if (!res.ok && primaryFrom.includes("@ringgerlaw.com")) {
-      await fetch(RESEND_API_URL, {
+    for (const fromAddress of candidateSenders) {
+      const res = await fetch(RESEND_API_URL, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "Ringger Law Lead Alerts <onboarding@resend.dev>",
+          from: fromAddress,
           to,
           reply_to: payload.replyTo || undefined,
           subject: payload.subject,
           html: payload.html,
         }),
       });
+      if (res.ok) {
+        break;
+      }
     }
   } catch (err) {
     console.error("Failed to send Resend email notification:", err);
