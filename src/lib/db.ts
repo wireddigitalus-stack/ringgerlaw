@@ -335,7 +335,7 @@ function rowToLead(r: Record<string, unknown>): LeadRecord {
     preferredTime: String(r.preferred_time || payload.preferredTime || ""),
     notes: String(r.notes || payload.notes || ""),
     status: (r.status || payload.status || "NEW") as LeadStatus,
-    estimatedCaseValue: Number(r.estimated_case_value ?? payload.estimatedCaseValue ?? 1850),
+    estimatedCaseValue: Number(r.estimated_case_value ?? payload.estimatedCaseValue ?? 0),
     trafficChannel: payload.trafficChannel,
     trafficSourceLabel: payload.trafficSourceLabel,
     referrerUrl: payload.referrerUrl,
@@ -473,7 +473,7 @@ export async function addLeadAsync(
   }
 
   let recommendedChapter: RecommendedChapter = "Chapter 7 ($0 Down Eligible)";
-  let estimatedCaseValue = 1850;
+  const estimatedCaseValue = 0;
   if (
     (input.ownsHome && input.behindOnPayments) ||
     concernLower.includes("foreclosure") ||
@@ -481,7 +481,6 @@ export async function addLeadAsync(
     concernLower.includes("chapter 13")
   ) {
     recommendedChapter = "Chapter 13 (Asset Protection Plan)";
-    estimatedCaseValue = 3800;
   }
 
   const newLead: LeadRecord = {

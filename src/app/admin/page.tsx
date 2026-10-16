@@ -648,7 +648,9 @@ export default function AdminDashboardPage() {
                               </strong>
                             </div>
                             <div className="text-[#A8E028] font-bold mt-0.5">
-                              Est. Case Fee: ${lead.estimatedCaseValue.toLocaleString()}
+                              {lead.estimatedCaseValue > 0
+                                ? `Retainer Fee: $${lead.estimatedCaseValue.toLocaleString()}`
+                                : "Consultation: Free ($0 Down)"}
                             </div>
                           </td>
 
