@@ -65,96 +65,67 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      {/* SIGNATURE HERO BANNER: Recreating the Iconic Ringger Law Credit-Card + Lime-Green + Cutout Portrait Banner */}
+      {/* SIGNATURE HERO BANNER: Centered Hero Text Over Signature Credit-Card + Rich Purple/Indigo Background */}
       <section className="relative bg-[#140826] text-white overflow-hidden">
         {/* Background Credit Card Macro Image + Rich Purple/Indigo Overlay */}
         <div
           className="absolute inset-0 bg-cover bg-center opacity-50 scale-105"
           style={{ backgroundImage: `url("${CREDIT_CARD_HERO_BG}")` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#130624]/95 via-[#261042]/75 to-[#18082c]/70" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_40%,rgba(163,217,41,0.16),transparent_55%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#130624]/90 via-[#261042]/80 to-[#140826]/95" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(163,217,41,0.18),transparent_60%)]" />
 
-        {/* Full-Width Hero Container so Portrait sits flush right against the screen edge */}
-        <div className="w-full pt-4 lg:pt-6 pb-0 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 items-end">
-            {/* Left Side: Bold Headline with Signature Lime-Green Highlights (Anchored Near Top Header) */}
-            <div className="lg:col-span-7 self-start pt-2 lg:pt-4 pb-10 lg:pb-16 pl-4 sm:pl-8 lg:pl-16 xl:pl-28 pr-4 space-y-5">
-              <div className="inline-flex flex-wrap items-center gap-2 bg-black/45 backdrop-blur-md border border-[#A8E028]/40 rounded-full px-4 py-1.5 text-xs font-bold text-[#B6F035]">
-                <Award className="w-4 h-4 text-[#A8E028]" />
-                <span>Serving Jackson &amp; West Tennessee Since 1981 • $0 Money Down Options</span>
-              </div>
+        {/* Centered Hero Content Container */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 pb-12 sm:pb-16 relative z-10 text-center space-y-6">
+          <div className="inline-flex flex-wrap items-center justify-center gap-2 bg-black/45 backdrop-blur-md border border-[#A8E028]/40 rounded-full px-5 py-1.5 text-xs sm:text-sm font-bold text-[#B6F035]">
+            <Award className="w-4 h-4 text-[#A8E028]" />
+            <span>Serving Jackson &amp; West Tennessee Since 1981 • $0 Money Down Options</span>
+          </div>
 
-              <h1 className="text-4xl sm:text-6xl lg:text-[68px] xl:text-[74px] font-sans font-extrabold tracking-tight leading-[1.04] drop-shadow-md">
-                <span className="text-[#A8E028]">Eliminate</span>{" "}
-                <span className="text-white">Credit Card</span>
-                <span className="block text-white">&amp; Medical Debt.</span>
-                <span className="block mt-1">
-                  <span className="text-[#A8E028]">Stop</span>{" "}
-                  <span className="text-white">Foreclosures</span>
-                </span>
-                <span className="block text-white">&amp; Repossessions.</span>
-                <span className="block text-[#A8E028] text-3xl sm:text-5xl lg:text-[56px] mt-2">
-                  In just 4 easy steps
-                </span>
-              </h1>
+          <h1 className="text-4xl sm:text-6xl lg:text-[68px] xl:text-[74px] font-sans font-extrabold tracking-tight leading-[1.05] drop-shadow-md">
+            <span className="text-[#A8E028]">Eliminate</span>{" "}
+            <span className="text-white">Credit Card &amp; Medical Debt.</span>
+            <span className="block mt-1">
+              <span className="text-[#A8E028]">Stop</span>{" "}
+              <span className="text-white">Foreclosures &amp; Repossessions.</span>
+            </span>
+            <span className="block text-[#A8E028] text-3xl sm:text-5xl lg:text-[54px] mt-3">
+              In just 4 easy steps
+            </span>
+          </h1>
 
-              <p className="text-base sm:text-lg text-slate-200 max-w-xl leading-relaxed font-medium">
-                Start your <strong>FREE Consultation</strong> today with{" "}
-                <span className="text-[#B6F035] font-bold underline underline-offset-4">
-                  No Money Down
-                </span>
-                . We enforce your federal rights so you keep your home and vehicle while immediately stopping aggressive bill collectors and 25% wage garnishments.
-              </p>
+          <p className="text-base sm:text-lg lg:text-xl text-slate-200 max-w-3xl mx-auto leading-relaxed font-medium">
+            Start your <strong>FREE Consultation</strong> today with{" "}
+            <span className="text-[#B6F035] font-bold underline underline-offset-4">
+              No Money Down
+            </span>
+            . We enforce your federal rights so you keep your home and vehicle while immediately stopping aggressive bill collectors and 25% wage garnishments.
+          </p>
 
-              {/* High-Impact Action Buttons */}
-              <div className="flex flex-wrap items-center gap-4 pt-2">
-                <a
-                  href="#fast-capture"
-                  className="bg-[#A8E028] hover:bg-[#b8f038] text-black font-extrabold text-sm sm:text-base px-7 py-4 rounded-full shadow-xl shadow-[#A8E028]/25 flex items-center gap-2.5 transition transform hover:-translate-y-0.5"
-                >
-                  <span>GET STARTED! (Free Consult)</span>
-                  <ArrowRight className="w-5 h-5" />
-                </a>
+          {/* Centered High-Impact Action Buttons */}
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+            <a
+              href="#fast-capture"
+              className="bg-[#A8E028] hover:bg-[#b8f038] text-black font-extrabold text-sm sm:text-base px-8 py-4 rounded-full shadow-xl shadow-[#A8E028]/25 flex items-center gap-2.5 transition transform hover:-translate-y-0.5"
+            >
+              <span>GET STARTED! (Free Consult)</span>
+              <ArrowRight className="w-5 h-5" />
+            </a>
 
-                <a
-                  href={FIRM_INFO.phoneHref}
-                  className="bg-black/50 hover:bg-black/70 backdrop-blur-md text-white font-bold text-sm sm:text-base px-6 py-4 rounded-full border border-white/25 hover:border-[#A8E028] flex items-center gap-2.5 transition"
-                >
-                  <Phone className="w-4 h-4 text-[#A8E028]" />
-                  <span>Call {FIRM_INFO.phoneFormatted}</span>
-                </a>
-              </div>
-            </div>
-
-            {/* Right Side: Responsive Cutout Portrait of Louis W. Ringger Jr. Justified Flush to Right Screen Edge */}
-            <div className="lg:col-span-5 relative flex items-end justify-end pr-0 mr-0 mt-4 lg:mt-0">
-              <div className="relative w-full flex flex-col sm:flex-row items-end justify-end">
-                {/* Name & Title Overlay Positioned to the Left of His Shoulder and Scaling Responsively */}
-                <div className="relative sm:absolute bottom-4 sm:bottom-8 lg:bottom-12 left-4 sm:left-auto sm:right-[54%] lg:right-[74%] xl:right-[78%] z-20 text-left sm:text-right whitespace-nowrap drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] mb-2 sm:mb-0 self-start sm:self-auto px-4 sm:px-0">
-                  <div className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-extrabold text-white tracking-tight leading-tight">
-                    Louis W. Ringger Jr.
-                  </div>
-                  <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-extrabold text-[#A8E028] leading-tight">
-                    Attorney at Law
-                  </div>
-                </div>
-
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://static.wixstatic.com/media/44d8da_50b497936b394f05978c2296d23a252d~mv2.png/v1/fill/w_1260,h_1680,al_c,q_90/LR%20edit.png"
-                  alt="Louis W. Ringger Jr. — Attorney at Law in Jackson, Tennessee"
-                  className="relative z-10 w-[clamp(260px,68vw,460px)] sm:w-[clamp(340px,50vw,540px)] lg:w-[clamp(440px,42vw,680px)] xl:w-[clamp(540px,40vw,750px)] h-auto object-contain object-right-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.85)] select-none ml-auto mr-0"
-                />
-              </div>
-            </div>
+            <a
+              href={FIRM_INFO.phoneHref}
+              className="bg-black/50 hover:bg-black/70 backdrop-blur-md text-white font-bold text-sm sm:text-base px-7 py-4 rounded-full border border-white/25 hover:border-[#A8E028] flex items-center gap-2.5 transition"
+            >
+              <Phone className="w-4 h-4 text-[#A8E028]" />
+              <span>Call {FIRM_INFO.phoneFormatted}</span>
+            </a>
           </div>
         </div>
 
-        {/* Rounded Black Bottom Transition Band ("4 Easy Steps!" Bar from Screenshot) */}
+        {/* Rounded Black Bottom Transition Band ("4 Easy Steps!" Bar) */}
         <div className="relative z-20 bg-black rounded-t-[36px] border-t border-white/15 px-4 sm:px-8 py-6">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
               <span className="text-2xl sm:text-3xl font-extrabold text-[#A8E028] tracking-tight">
                 4 Easy Steps!
               </span>
@@ -180,24 +151,52 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CAPTURE ENGINE #1 (TOP OF PAGE): 1-STEP FAST CONSULTATION FORM + WHY RINGGER LAW */}
+      {/* CAPTURE ENGINE #1 (TOP OF PAGE): ABOUT RINGGER LAW CARD (PORTRAIT JUSTIFIED RIGHT) + 1-STEP FAST CONSULTATION FORM */}
       <section id="fast-capture" className="bg-navy-950 text-white py-14 lg:py-20 px-4 border-b border-gold-500/30">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          {/* Left Column: Why Ringger Law & Trust Bullets */}
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          {/* Left Column: About Ringger Law Card with Cutout Portrait Justified Right + Trust Bullets */}
           <div className="lg:col-span-7 space-y-6">
-            <span className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#A8E028] bg-white/10 px-3.5 py-1.5 rounded-full">
-              <ShieldCheck className="w-4 h-4 text-[#A8E028]" /> Over 45 Years of Helping Clients Realize Financial Freedom
-            </span>
+            {/* ABOUT CARD WITH LOUIS W. RINGGER JR. CUTOUT JUSTIFIED FLUSH RIGHT IN THE CARD */}
+            <div className="relative bg-gradient-to-br from-[#1b0c33] via-navy-900 to-[#120722] border border-[#A8E028]/35 rounded-3xl overflow-hidden shadow-2xl">
+              <div className="grid grid-cols-1 sm:grid-cols-12 items-end">
+                {/* Card Left Copy */}
+                <div className="sm:col-span-7 p-6 sm:p-8 space-y-4 self-center z-10">
+                  <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-[#A8E028] bg-black/40 border border-[#A8E028]/30 px-3 py-1 rounded-full">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#A8E028]" /> Est. 1981 • 45+ Years Experience
+                  </span>
 
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white leading-tight">
-              Start Your Free Consultation Today — With{" "}
-              <span className="text-[#A8E028]">$0 Money Down</span>.
-            </h2>
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-white leading-tight">
+                    Start Your Free Consultation Today — With{" "}
+                    <span className="text-[#A8E028]">$0 Money Down</span>.
+                  </h2>
 
-            <p className="text-slate-200 text-sm sm:text-base leading-relaxed">
-              The Law Offices of Louis W. Ringger were founded by <strong>Bill Ringger in 1981</strong> and have helped many thousands of clients across Jackson, Madison County, and West Tennessee become financially independent with a fresh new start. Fill out our <strong>Fast Free Consultation Card</strong> right here and our office will reach out to you directly!
-            </p>
+                  <p className="text-slate-200 text-xs sm:text-sm leading-relaxed">
+                    Founded by <strong>Bill Ringger in 1981</strong>, The Law Offices of Louis W. Ringger has helped thousands of Jackson and West Tennessee families eliminate debt, stop foreclosures, and gain a fresh start.
+                  </p>
 
+                  <div className="pt-1">
+                    <div className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                      Louis W. Ringger Jr.
+                    </div>
+                    <div className="text-sm sm:text-base font-extrabold text-[#A8E028]">
+                      Attorney at Law • Jackson, TN
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card Right Image: Cutout Portrait Justified Flush Right & Bottom Inside the Card */}
+                <div className="sm:col-span-5 relative flex items-end justify-end self-end pr-0 pb-0 mr-0 ml-auto w-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="https://static.wixstatic.com/media/44d8da_50b497936b394f05978c2296d23a252d~mv2.png/v1/fill/w_1260,h_1680,al_c,q_90/LR%20edit.png"
+                    alt="Louis W. Ringger Jr. — Attorney at Law in Jackson, Tennessee"
+                    className="w-[240px] sm:w-[270px] md:w-[300px] lg:w-[310px] max-w-none h-auto object-contain object-right-bottom drop-shadow-[0_14px_28px_rgba(0,0,0,0.85)] select-none ml-auto mr-0 block"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* 4 Key Value Pillars Beneath the About Card */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="flex items-start gap-3 bg-white/5 border border-white/10 rounded-2xl p-4">
                 <CheckCircle2 className="w-5 h-5 text-[#A8E028] shrink-0 mt-0.5" />
