@@ -359,11 +359,17 @@ export function Header() {
                 </p>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Your Name *</label>
+                  <label
+                    htmlFor="emergency-client-full-name"
+                    className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                  >
+                    Your Name *
+                  </label>
                   <input
+                    id="emergency-client-full-name"
                     type="text"
-                    name="name"
-                    autoComplete="name"
+                    name="clientFullName"
+                    autoComplete="section-client name"
                     spellCheck={true}
                     autoCorrect="on"
                     required
@@ -375,11 +381,17 @@ export function Header() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">Best Phone Number *</label>
+                  <label
+                    htmlFor="emergency-client-phone"
+                    className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                  >
+                    Best Phone Number *
+                  </label>
                   <input
+                    id="emergency-client-phone"
                     type="tel"
-                    name="phone"
-                    autoComplete="tel"
+                    name="clientPhone"
+                    autoComplete="section-client tel"
                     required
                     value={emergencyForm.phone}
                     onChange={(e) => setEmergencyForm({ ...emergencyForm, phone: e.target.value })}

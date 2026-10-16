@@ -324,11 +324,14 @@ export function DebtReliefQuiz({ defaultSource = "/" }: { defaultSource?: string
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">First Name *</label>
+                <label htmlFor="quiz-client-first-name" className="block text-xs font-bold text-slate-700 mb-1">
+                  First Name *
+                </label>
                 <input
+                  id="quiz-client-first-name"
                   type="text"
-                  name="firstName"
-                  autoComplete="given-name"
+                  name="clientFirstName"
+                  autoComplete="section-client given-name"
                   spellCheck={true}
                   autoCorrect="on"
                   required
@@ -339,11 +342,14 @@ export function DebtReliefQuiz({ defaultSource = "/" }: { defaultSource?: string
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Last Name</label>
+                <label htmlFor="quiz-client-last-name" className="block text-xs font-bold text-slate-700 mb-1">
+                  Last Name
+                </label>
                 <input
+                  id="quiz-client-last-name"
                   type="text"
-                  name="lastName"
-                  autoComplete="family-name"
+                  name="clientLastName"
+                  autoComplete="section-client family-name"
                   spellCheck={true}
                   autoCorrect="on"
                   value={lastName}
@@ -356,11 +362,14 @@ export function DebtReliefQuiz({ defaultSource = "/" }: { defaultSource?: string
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Phone Number *</label>
+                <label htmlFor="quiz-client-phone" className="block text-xs font-bold text-slate-700 mb-1">
+                  Phone Number *
+                </label>
                 <input
+                  id="quiz-client-phone"
                   type="tel"
-                  name="phone"
-                  autoComplete="tel"
+                  name="clientPhone"
+                  autoComplete="section-client tel"
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
@@ -369,11 +378,14 @@ export function DebtReliefQuiz({ defaultSource = "/" }: { defaultSource?: string
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                <label htmlFor="quiz-client-email" className="block text-xs font-bold text-slate-700 mb-1">
+                  Email Address
+                </label>
                 <input
+                  id="quiz-client-email"
                   type="email"
-                  name="email"
-                  autoComplete="email"
+                  name="clientEmail"
+                  autoComplete="section-client email"
                   spellCheck={false}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

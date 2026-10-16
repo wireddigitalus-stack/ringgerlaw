@@ -180,13 +180,17 @@ export default function ClientIntakePortalPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                    <label
+                      htmlFor="intake-client-full-name"
+                      className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                    >
                       Full Legal Name *
                     </label>
                     <input
+                      id="intake-client-full-name"
                       type="text"
-                      name="name"
-                      autoComplete="name"
+                      name="clientFullName"
+                      autoComplete="section-client name"
                       spellCheck={true}
                       autoCorrect="on"
                       required
@@ -197,13 +201,17 @@ export default function ClientIntakePortalPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                    <label
+                      htmlFor="intake-client-phone"
+                      className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                    >
                       Phone Number *
                     </label>
                     <input
+                      id="intake-client-phone"
                       type="tel"
-                      name="phone"
-                      autoComplete="tel"
+                      name="clientPhone"
+                      autoComplete="section-client tel"
                       required
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -215,13 +223,17 @@ export default function ClientIntakePortalPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                    <label
+                      htmlFor="intake-client-email"
+                      className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                    >
                       Email Address *
                     </label>
                     <input
+                      id="intake-client-email"
                       type="email"
-                      name="email"
-                      autoComplete="email"
+                      name="clientEmail"
+                      autoComplete="section-client email"
                       spellCheck={false}
                       required
                       value={form.email}

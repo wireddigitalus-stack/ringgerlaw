@@ -8,7 +8,7 @@ export const SUPABASE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
-  "";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1Znl4cWdnZnpvdHJiY2t5emxkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxMDc2NDIsImV4cCI6MjEwNzY4MzY0Mn0.Rbu_qpYfe8quT9vvc2WXsDVF-HaU-q8Al0Bzw7cQLco";
 
 let supabaseInstance: SupabaseClient | null = null;
 

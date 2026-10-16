@@ -188,13 +188,17 @@ export default function BookOnlinePage() {
               {/* Contact Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                  <label
+                    htmlFor="book-client-first-name"
+                    className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                  >
                     First Name *
                   </label>
                   <input
+                    id="book-client-first-name"
                     type="text"
-                    name="firstName"
-                    autoComplete="given-name"
+                    name="clientFirstName"
+                    autoComplete="section-client given-name"
                     spellCheck={true}
                     autoCorrect="on"
                     required
@@ -204,13 +208,17 @@ export default function BookOnlinePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                  <label
+                    htmlFor="book-client-last-name"
+                    className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                  >
                     Last Name *
                   </label>
                   <input
+                    id="book-client-last-name"
                     type="text"
-                    name="lastName"
-                    autoComplete="family-name"
+                    name="clientLastName"
+                    autoComplete="section-client family-name"
                     spellCheck={true}
                     autoCorrect="on"
                     required
@@ -223,13 +231,17 @@ export default function BookOnlinePage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                  <label
+                    htmlFor="book-client-phone"
+                    className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                  >
                     Phone Number *
                   </label>
                   <input
+                    id="book-client-phone"
                     type="tel"
-                    name="phone"
-                    autoComplete="tel"
+                    name="clientPhone"
+                    autoComplete="section-client tel"
                     required
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -238,13 +250,17 @@ export default function BookOnlinePage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                  <label
+                    htmlFor="book-client-email"
+                    className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                  >
                     Email Address *
                   </label>
                   <input
+                    id="book-client-email"
                     type="email"
-                    name="email"
-                    autoComplete="email"
+                    name="clientEmail"
+                    autoComplete="section-client email"
                     spellCheck={false}
                     required
                     value={form.email}

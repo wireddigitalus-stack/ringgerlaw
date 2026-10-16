@@ -192,9 +192,10 @@ export function AiConciergeWidget() {
                       <ShieldAlert className="w-4 h-4" /> Want Louis Ringger&apos;s Office to Call You Free?
                     </div>
                     <input
+                      id="concierge-client-first-name"
                       type="text"
-                      name="firstName"
-                      autoComplete="given-name"
+                      name="clientFirstName"
+                      autoComplete="section-client given-name"
                       spellCheck={true}
                       autoCorrect="on"
                       required
@@ -204,9 +205,10 @@ export function AiConciergeWidget() {
                       className="w-full px-2.5 py-1.5 rounded bg-white text-slate-900 text-xs"
                     />
                     <input
+                      id="concierge-client-phone"
                       type="tel"
-                      name="phone"
-                      autoComplete="tel"
+                      name="clientPhone"
+                      autoComplete="section-client tel"
                       required
                       placeholder="Best Phone Number *"
                       value={leadForm.phone}

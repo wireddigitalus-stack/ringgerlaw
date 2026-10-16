@@ -199,13 +199,17 @@ export function FastCaptureCard({
           ) : (
             <form onSubmit={handleFastSubmit} autoComplete="on" spellCheck={true} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                <label
+                  htmlFor="fast-client-full-name"
+                  className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                >
                   Your Full Name *
                 </label>
                 <input
+                  id="fast-client-full-name"
                   type="text"
-                  name="name"
-                  autoComplete="name"
+                  name="clientFullName"
+                  autoComplete="section-client name"
                   spellCheck={true}
                   autoCorrect="on"
                   required
@@ -218,13 +222,17 @@ export function FastCaptureCard({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                  <label
+                    htmlFor="fast-client-phone"
+                    className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                  >
                     Best Phone Number *
                   </label>
                   <input
+                    id="fast-client-phone"
                     type="tel"
-                    name="phone"
-                    autoComplete="tel"
+                    name="clientPhone"
+                    autoComplete="section-client tel"
                     required
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -233,13 +241,17 @@ export function FastCaptureCard({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-700 mb-1">
+                  <label
+                    htmlFor="fast-client-email"
+                    className="block text-xs font-bold uppercase text-slate-700 mb-1"
+                  >
                     Email Address
                   </label>
                   <input
+                    id="fast-client-email"
                     type="email"
-                    name="email"
-                    autoComplete="email"
+                    name="clientEmail"
+                    autoComplete="section-client email"
                     spellCheck={false}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}

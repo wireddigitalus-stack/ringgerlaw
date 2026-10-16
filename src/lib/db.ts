@@ -486,7 +486,7 @@ export async function addLeadAsync(
 
   const newLead: LeadRecord = {
     ...input,
-    id: `LD-2026-${1001 + db.leads.length + Math.floor(Math.random() * 900)}`,
+    id: `LD-2026-${String(Date.now()).slice(-4)}${Math.floor(10 + Math.random() * 89)}`,
     createdAt: new Date().toISOString(),
     urgency,
     recommendedChapter,
@@ -501,7 +501,7 @@ export async function addLeadAsync(
   const supabase = getSupabaseClient();
   if (supabase) {
     try {
-      await supabase.from("leads").insert({
+      const { error } = await supabase.from("leads").upsert({
         id: newLead.id,
         created_at: newLead.createdAt,
         first_name: newLead.firstName,
@@ -524,6 +524,9 @@ export async function addLeadAsync(
         estimated_case_value: newLead.estimatedCaseValue,
         payload: newLead,
       });
+      if (error) {
+        console.error("Supabase lead upsert error:", error);
+      }
     } catch (e) {
       console.error("Supabase lead insert fallback:", e);
     }
@@ -607,7 +610,7 @@ export async function addIntakeAsync(
   const db = getLocalDb();
   const newIntake: IntakeRecord = {
     ...input,
-    id: `INT-2026-${401 + db.intakes.length + Math.floor(Math.random() * 500)}`,
+    id: `INT-2026-${String(Date.now()).slice(-4)}${Math.floor(10 + Math.random() * 89)}`,
     createdAt: new Date().toISOString(),
   };
   db.intakes.unshift(newIntake);
@@ -648,7 +651,7 @@ export async function addIntakeAsync(
   const supabase = getSupabaseClient();
   if (supabase) {
     try {
-      await supabase.from("intakes").insert({
+      const { error } = await supabase.from("intakes").upsert({
         id: newIntake.id,
         created_at: newIntake.createdAt,
         lead_id: newIntake.leadId || "",
@@ -664,6 +667,9 @@ export async function addIntakeAsync(
         signature_date: newIntake.signatureDate,
         payload: newIntake,
       });
+      if (error) {
+        console.error("Supabase intake upsert error:", error);
+      }
     } catch (e) {
       console.error("Supabase intake insert fallback:", e);
     }
