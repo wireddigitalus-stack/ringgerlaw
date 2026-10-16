@@ -37,6 +37,26 @@ export const metadata: Metadata = {
     locale: "en_US",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ringger Law | Bankruptcy Attorney Jackson TN | Est. 1981",
+    description:
+      "Eliminate credit card & medical debt, stop foreclosures, car repossessions, and 25% wage garnishments across West Tennessee. Free Consultation.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || undefined,
+  },
   alternates: {
     canonical: "https://www.ringgerlaw.com",
   },

@@ -26,36 +26,51 @@ import {
 const CREDIT_CARD_HERO_BG =
   "https://static.wixstatic.com/media/77e9849579aa4e5985019cd20d8d5ea1.jpg/v1/fill/w_1920,h_1080,al_c,q_85/77e9849579aa4e5985019cd20d8d5ea1.jpg";
 
+const HOMEPAGE_FAQS = [
+  {
+    question: "How can I eliminate credit card and medical debt or stop a foreclosure in Jackson, Tennessee?",
+    answer:
+      "By filing Chapter 7 or Chapter 13 bankruptcy in the U.S. Bankruptcy Court for the Western District of Tennessee (111 S. Highland Ave, Jackson, TN 38301), a federal Automatic Stay (11 U.S.C. § 362) immediately stops foreclosures, vehicle repossessions, and 25% wage garnishments. Ringger Law has helped West Tennessee families since 1981 with $0 Money Down consultation and filing options.",
+  },
+  {
+    question: "Will I lose my home or car if I file bankruptcy with Ringger Law in Tennessee?",
+    answer:
+      "No—over 98% of our clients keep their homes and vehicles. Tennessee statutory exemptions (Tenn. Code Ann. § 26-2-301 and § 26-2-103) protect up to $35,000–$52,500+ in primary home equity and $10,000 per filer in personal property, while Chapter 13 lets you catch up on missed mortgage or car payments over 3 to 5 years.",
+  },
+  {
+    question: "How does $0 Money Down bankruptcy work in Jackson & West Tennessee?",
+    answer:
+      "Your initial consultation with Attorney Louis W. Ringger Jr. is 100% free. In Chapter 13 asset-protection cases, we can roll your attorney fees directly into your affordable monthly court plan so you don't need thousands of dollars upfront to stop an emergency foreclosure, car repossession, or wage garnishment today.",
+  },
+  {
+    question: "How fast can Ringger Law stop a 25% paycheck garnishment or General Sessions lawsuit?",
+    answer:
+      "The exact same day your bankruptcy petition is filed electronically with the Western District of Tennessee Bankruptcy Court in Jackson, the federal Automatic Stay takes effect. Our office immediately notifies your employer's payroll department and the General Sessions Court clerk so your full paycheck is restored.",
+  },
+  {
+    question: "Where is the Bankruptcy Court for Madison, Gibson, Haywood, Crockett, Chester, and Henderson Counties?",
+    answer:
+      "All six West Tennessee counties are served by the U.S. Bankruptcy Court for the Western District of Tennessee (Eastern Division) located at 111 S. Highland Ave, Jackson, TN 38301—just minutes from Ringger Law's office at 367 N. Parkway, Suite 1. Most 341 Trustee hearings are now conducted conveniently by phone or Zoom.",
+  },
+  {
+    question: "What are the 4 easy steps to file bankruptcy at Ringger Law?",
+    answer:
+      "Step 1: Free Phone, Zoom, or In-Office Consultation with Attorney Louis W. Ringger Jr. Step 2: Complete our simple online or in-office intake worksheet. Step 3: Ringger Law prepares and electronically files your Bankruptcy Petition, activating immediate creditor protection. Step 4: Fast online credit counseling and final debt discharge.",
+  },
+];
+
 export default function HomePage() {
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "How can I eliminate credit card and medical debt or stop a foreclosure in Jackson, Tennessee?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "By filing Chapter 7 or Chapter 13 bankruptcy in the U.S. Bankruptcy Court for the Western District of Tennessee (111 S. Highland Ave, Jackson, TN), a federal Automatic Stay (11 U.S.C. § 362) immediately stops foreclosures, vehicle repossessions, and 25% wage garnishments. Ringger Law has helped West Tennessee families since 1981 with $0 Money Down consultation and filing options.",
-        },
+    mainEntity: HOMEPAGE_FAQS.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: f.answer,
       },
-      {
-        "@type": "Question",
-        name: "Will I lose my home or car if I file bankruptcy with Ringger Law in Tennessee?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "No—over 98% of our clients keep their homes and vehicles. Tennessee statutory exemptions (Tenn. Code Ann. § 26-2-301 and § 26-2-103) protect up to $35,000–$52,500+ in primary home equity and $10,000 per filer in personal property, while Chapter 13 lets you catch up on missed mortgage or car payments over 3 to 5 years.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "What are the 4 easy steps to file bankruptcy at Ringger Law?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Step 1: Free Phone or Office Consultation with Attorney Louis W. Ringger Jr. Step 2: Gather essential documents (pay stubs, tax returns, debts). Step 3: Ringger Law prepares and electronically files your Bankruptcy Petition, activating immediate creditor protection. Step 4: Fast online credit counseling and final debt discharge.",
-        },
-      },
-    ],
+    })),
   };
 
   return (
@@ -596,6 +611,39 @@ export default function HomePage() {
                   {c.drivingDistanceToOffice}
                 </div>
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* JACKSON & WEST TENNESSEE BANKRUPTCY FAQ (GOOGLE AI OVERVIEWS & PEOPLE ALSO ASK) */}
+      <section className="bg-slate-50 border-t border-slate-200 py-16 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <span className="text-xs font-bold uppercase tracking-widest text-gold-600">
+              Tennessee Bankruptcy Questions Answered
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-navy-950 mt-2">
+              Frequently Asked Questions About Filing Bankruptcy in Jackson, TN
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 mt-1.5">
+              Straight answers from Attorney Louis W. Ringger Jr. based on federal bankruptcy law and Tennessee statutory exemptions.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {HOMEPAGE_FAQS.map((faq, idx) => (
+              <div
+                key={idx}
+                className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-2"
+              >
+                <h3 className="text-base font-serif font-bold text-navy-950 leading-snug">
+                  {faq.question}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  {faq.answer}
+                </p>
+              </div>
             ))}
           </div>
         </div>

@@ -8,6 +8,18 @@ export const metadata: Metadata = {
   title: "Contact Ringger Law | 367 N. Parkway, Suite 1, Jackson, TN 38305 | (731) 421-1501",
   description:
     "Contact Attorney Louis W. Ringger Jr. in Jackson, TN for a free bankruptcy consultation. Call (731) 421-1501 or visit 367 N. Parkway, Suite 1, Jackson, TN 38305.",
+  alternates: {
+    canonical: "https://www.ringgerlaw.com/contact",
+  },
+  openGraph: {
+    title: "Contact Ringger Law | 367 N. Parkway, Suite 1, Jackson, TN 38305 | (731) 421-1501",
+    description:
+      "Contact Attorney Louis W. Ringger Jr. in Jackson, TN for a free bankruptcy consultation. Call (731) 421-1501 or visit 367 N. Parkway, Suite 1, Jackson, TN 38305.",
+    url: "https://www.ringgerlaw.com/contact",
+    siteName: "Ringger Law",
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function ContactPage() {

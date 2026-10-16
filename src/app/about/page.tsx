@@ -18,6 +18,18 @@ export const metadata: Metadata = {
   title: "About Ringger Law | Founded in 1981 | Louis W. Ringger Jr. Bankruptcy Attorney",
   description:
     "Founded by Bill Ringger in 1981, The Law Offices of Louis W. Ringger has over 45 years of experience helping Jackson and West Tennessee families eliminate debt through Chapter 7 and Chapter 13 bankruptcy.",
+  alternates: {
+    canonical: "https://www.ringgerlaw.com/about",
+  },
+  openGraph: {
+    title: "About Ringger Law | Founded in 1981 | Louis W. Ringger Jr. Bankruptcy Attorney",
+    description:
+      "Founded by Bill Ringger in 1981, The Law Offices of Louis W. Ringger has over 45 years of experience helping Jackson and West Tennessee families eliminate debt.",
+    url: "https://www.ringgerlaw.com/about",
+    siteName: "Ringger Law",
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function AboutPage() {

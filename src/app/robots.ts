@@ -6,14 +6,24 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin", "/api/"],
+        disallow: ["/admin", "/api/", "/blank"],
       },
       {
-        userAgent: ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "PerplexityBot", "Google-Extended", "ClaudeBot"],
+        userAgent: [
+          "GPTBot",
+          "OAI-SearchBot",
+          "ChatGPT-User",
+          "PerplexityBot",
+          "Google-Extended",
+          "ClaudeBot",
+          "anthropic-ai",
+          "Applebot-Extended",
+        ],
         allow: ["/", "/llms.txt", "/practice/", "/locations/", "/resources/"],
-        disallow: ["/admin", "/api/"],
+        disallow: ["/admin", "/api/", "/blank"],
       },
     ],
+    host: "https://www.ringgerlaw.com",
     sitemap: "https://www.ringgerlaw.com/sitemap.xml",
   };
 }

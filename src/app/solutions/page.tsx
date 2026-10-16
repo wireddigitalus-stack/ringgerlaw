@@ -16,6 +16,18 @@ export const metadata: Metadata = {
   title: "Bankruptcy & Debt Relief Solutions in Jackson & West TN | Ringger Law",
   description:
     "Explore Ringger Law's consumer bankruptcy solutions in Jackson, TN: Chapter 7 debt discharge, Chapter 13 foreclosure defense, stopping car repossession, and ending 25% wage garnishments.",
+  alternates: {
+    canonical: "https://www.ringgerlaw.com/solutions",
+  },
+  openGraph: {
+    title: "Bankruptcy & Debt Relief Solutions in Jackson & West TN | Ringger Law",
+    description:
+      "Explore Ringger Law's consumer bankruptcy solutions in Jackson, TN: Chapter 7 debt discharge, Chapter 13 foreclosure defense, stopping car repossession, and ending 25% wage garnishments.",
+    url: "https://www.ringgerlaw.com/solutions",
+    siteName: "Ringger Law",
+    locale: "en_US",
+    type: "website",
+  },
 };
 
 export default function SolutionsHubPage() {

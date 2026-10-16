@@ -27,11 +27,25 @@ export async function generateMetadata({
   const { slug } = await params;
   const page = PRACTICE_AREAS.find((p) => p.slug === slug);
   if (!page) return {};
+  const url = `https://www.ringgerlaw.com/practice/${page.slug}`;
   return {
     title: page.metaTitle,
     description: page.metaDescription,
     alternates: {
-      canonical: `https://www.ringgerlaw.com/practice/${page.slug}`,
+      canonical: url,
+    },
+    openGraph: {
+      title: page.metaTitle,
+      description: page.metaDescription,
+      url,
+      siteName: "Ringger Law",
+      locale: "en_US",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: page.metaTitle,
+      description: page.metaDescription,
     },
   };
 }
@@ -45,30 +59,89 @@ export default async function PracticeAreaDetailPage({
   const page = PRACTICE_AREAS.find((p) => p.slug === slug);
   if (!page) notFound();
 
-  const faqSchema = {
+  const pageUrl = `https://www.ringgerlaw.com/practice/${page.slug}`;
+  const structuredSchema = {
     "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: page.faqs.map((f) => ({
-      "@type": "Question",
-      name: f.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: f.answer,
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://www.ringgerlaw.com",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Debt Relief Solutions",
+            item: "https://www.ringgerlaw.com/solutions",
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: page.shortTitle,
+            item: pageUrl,
+          },
+        ],
       },
-    })),
+      {
+        "@type": "Service",
+        "@id": `${pageUrl}#service`,
+        name: page.title,
+        serviceType: page.shortTitle,
+        description: page.directAnswerSummary,
+        url: pageUrl,
+        provider: {
+          "@type": "LegalService",
+          "@id": "https://www.ringgerlaw.com/#legalservice",
+          name: FIRM_INFO.name,
+          telephone: "+1-731-421-1501",
+        },
+        areaServed: COUNTY_LOCATIONS.map((c) => ({
+          "@type": "AdministrativeArea",
+          name: `${c.countyName}, TN`,
+        })),
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${pageUrl}#faq`,
+        mainEntity: page.faqs.map((f) => ({
+          "@type": "Question",
+          name: f.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: f.answer,
+          },
+        })),
+      },
+    ],
   };
 
   return (
     <div>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredSchema) }}
       />
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 text-white py-12 lg:py-16 border-b border-gold-500/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           <div className="lg:col-span-7 space-y-5">
+            <nav aria-label="Breadcrumb" className="text-xs text-slate-400 flex flex-wrap items-center gap-1.5">
+              <Link href="/" className="hover:text-gold-400 transition">
+                Home
+              </Link>
+              <span>/</span>
+              <Link href="/solutions" className="hover:text-gold-400 transition">
+                Debt Solutions
+              </Link>
+              <span>/</span>
+              <span className="text-gold-300 font-semibold">{page.shortTitle}</span>
+            </nav>
+
             <div className="inline-flex items-center gap-2 bg-gold-500/20 border border-gold-400/40 text-gold-300 text-xs font-bold px-3.5 py-1.5 rounded-full">
               <ShieldCheck className="w-4 h-4 text-gold-400" /> {page.heroBadge}
             </div>

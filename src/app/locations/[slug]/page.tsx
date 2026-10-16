@@ -26,11 +26,25 @@ export async function generateMetadata({
   const { slug } = await params;
   const county = COUNTY_LOCATIONS.find((c) => c.slug === slug);
   if (!county) return {};
+  const url = `https://www.ringgerlaw.com/locations/${county.slug}`;
   return {
     title: county.metaTitle,
     description: county.metaDescription,
     alternates: {
-      canonical: `https://www.ringgerlaw.com/locations/${county.slug}`,
+      canonical: url,
+    },
+    openGraph: {
+      title: county.metaTitle,
+      description: county.metaDescription,
+      url,
+      siteName: "Ringger Law",
+      locale: "en_US",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: county.metaTitle,
+      description: county.metaDescription,
     },
   };
 }
@@ -44,30 +58,101 @@ export default async function CountyLocationDetailPage({
   const county = COUNTY_LOCATIONS.find((c) => c.slug === slug);
   if (!county) notFound();
 
-  const faqSchema = {
+  const pageUrl = `https://www.ringgerlaw.com/locations/${county.slug}`;
+  const structuredSchema = {
     "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: county.faqs.map((f) => ({
-      "@type": "Question",
-      name: f.question,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: f.answer,
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://www.ringgerlaw.com",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "West TN Counties Served",
+            item: "https://www.ringgerlaw.com/contact",
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: `${county.countyName}, TN`,
+            item: pageUrl,
+          },
+        ],
       },
-    })),
+      {
+        "@type": "Service",
+        "@id": `${pageUrl}#county-service`,
+        name: `${county.countyName}, Tennessee Bankruptcy & Foreclosure Defense`,
+        serviceType: "Chapter 7 & Chapter 13 Bankruptcy Legal Representation",
+        description: county.directAnswerSummary,
+        url: pageUrl,
+        provider: {
+          "@type": "LegalService",
+          "@id": "https://www.ringgerlaw.com/#legalservice",
+          name: FIRM_INFO.name,
+          telephone: "+1-731-421-1501",
+        },
+        areaServed: [
+          {
+            "@type": "AdministrativeArea",
+            name: `${county.countyName}, Tennessee`,
+          },
+          ...county.primaryCities.map((city) => ({
+            "@type": "City",
+            name: `${city}, TN`,
+          })),
+          ...county.zipCodes.map((zip) => ({
+            "@type": "PostalAddress",
+            postalCode: zip,
+            addressRegion: "TN",
+            addressCountry: "US",
+          })),
+        ],
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${pageUrl}#faq`,
+        mainEntity: county.faqs.map((f) => ({
+          "@type": "Question",
+          name: f.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: f.answer,
+          },
+        })),
+      },
+    ],
   };
 
   return (
     <div>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredSchema) }}
       />
 
       {/* County Hero */}
       <section className="bg-gradient-to-br from-navy-950 via-navy-900 to-navy-800 text-white py-12 lg:py-16 border-b border-gold-500/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           <div className="lg:col-span-7 space-y-5">
+            <nav aria-label="Breadcrumb" className="text-xs text-slate-400 flex flex-wrap items-center gap-1.5">
+              <Link href="/" className="hover:text-gold-400 transition">
+                Home
+              </Link>
+              <span>/</span>
+              <Link href="/contact" className="hover:text-gold-400 transition">
+                Counties Served
+              </Link>
+              <span>/</span>
+              <span className="text-gold-300 font-semibold">{county.countyName}, TN</span>
+            </nav>
+
             <div className="inline-flex items-center gap-2 bg-gold-500/20 border border-gold-400/40 text-gold-300 text-xs font-bold px-3.5 py-1.5 rounded-full">
               <MapPin className="w-4 h-4 text-gold-400" /> Serving {county.countyName}, Tennessee Since 1981
             </div>
