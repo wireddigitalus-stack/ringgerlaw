@@ -76,10 +76,10 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_40%,rgba(163,217,41,0.16),transparent_55%)]" />
 
         {/* Full-Width Hero Container so Portrait sits flush right against the screen edge */}
-        <div className="w-full pt-10 lg:pt-16 pb-0 relative z-10">
+        <div className="w-full pt-4 lg:pt-6 pb-0 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 items-end">
-            {/* Left Side: Bold Headline with Signature Lime-Green Highlights */}
-            <div className="lg:col-span-7 pb-12 lg:pb-24 pl-4 sm:pl-8 lg:pl-16 xl:pl-28 pr-4 space-y-6">
+            {/* Left Side: Bold Headline with Signature Lime-Green Highlights (Anchored Near Top Header) */}
+            <div className="lg:col-span-7 self-start pt-2 lg:pt-4 pb-10 lg:pb-16 pl-4 sm:pl-8 lg:pl-16 xl:pl-28 pr-4 space-y-5">
               <div className="inline-flex flex-wrap items-center gap-2 bg-black/45 backdrop-blur-md border border-[#A8E028]/40 rounded-full px-4 py-1.5 text-xs font-bold text-[#B6F035]">
                 <Award className="w-4 h-4 text-[#A8E028]" />
                 <span>Serving Jackson &amp; West Tennessee Since 1981 • $0 Money Down Options</span>
