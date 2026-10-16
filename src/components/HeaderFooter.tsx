@@ -587,17 +587,28 @@ export function Footer() {
           <p className="max-w-4xl leading-relaxed">
             <strong>Mandatory Federal Disclosure (11 U.S.C. § 528):</strong> The Law Offices of Louis W. Ringger (Ringger Law) is a Federally Designated Debt Relief Agency. We help people file for bankruptcy relief under the U.S. Bankruptcy Code. Information on this website is for general educational purposes in Tennessee and does not establish an attorney-client relationship until a formal agreement is signed.
           </p>
-          <div className="flex flex-col sm:flex-row md:flex-col items-start sm:items-center md:items-end gap-1.5 text-slate-400 whitespace-nowrap">
+          <div className="flex flex-col sm:flex-row md:flex-col items-start sm:items-center md:items-end gap-2 text-slate-400 whitespace-nowrap">
             <div className="flex items-center gap-4">
               <span>© {new Date().getFullYear()} Ringger Law • Jackson, TN</span>
               <Link href="/admin" className="text-slate-400 hover:text-gold-400 underline">
                 Staff Login / Admin
               </Link>
             </div>
-            <div className="text-[11px] text-slate-400">
-              AI-Powered Website by{" "}
-              <span className="font-extrabold tracking-wider text-gold-400">
-                WIRED DIGITAL CREATIVE
+            <div className="flex flex-wrap items-center gap-2.5 text-[11px] text-slate-400">
+              <span>
+                AI-Powered Website by{" "}
+                <span className="font-extrabold tracking-wider text-gold-400">
+                  WIRED DIGITAL CREATIVE
+                </span>
+              </span>
+              <span className="inline-flex items-center gap-1.5 bg-white/5 border border-emerald-500/30 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wider uppercase text-slate-200 shadow-sm">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span>
+                  Powered by <span className="text-emerald-400 font-extrabold">GEMINI</span>
+                </span>
               </span>
             </div>
           </div>
