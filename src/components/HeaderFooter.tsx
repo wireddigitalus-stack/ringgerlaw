@@ -99,30 +99,30 @@ export function Header() {
       </div>
 
       {/* Main Sticky Navigation */}
-      <header className="sticky top-0 z-40 bg-navy-950/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 w-full bg-navy-950/95 backdrop-blur-md text-white border-b border-white/10 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5 xl:px-8 h-20 flex items-center justify-between gap-2 xl:gap-4">
           {/* Brand Logo */}
-          <Link href="/" className="flex items-center gap-3 shrink-0 group">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-navy-950 font-serif font-bold text-lg shadow-md group-hover:scale-105 transition shrink-0">
+          <Link href="/" className="flex items-center gap-2.5 xl:gap-3 shrink-0 group">
+            <div className="w-9 h-9 xl:w-10 xl:h-10 rounded-lg bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-navy-950 font-serif font-bold text-base xl:text-lg shadow-md group-hover:scale-105 transition shrink-0">
               RL
             </div>
             <div className="leading-tight">
-              <div className="flex items-center gap-2 whitespace-nowrap">
-                <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-white">
+              <div className="flex items-center gap-1.5 xl:gap-2 whitespace-nowrap">
+                <span className="font-serif text-base sm:text-lg xl:text-xl font-bold tracking-tight text-white">
                   RINGGER LAW
                 </span>
-                <span className="text-[10px] font-sans font-bold uppercase tracking-wider bg-gold-500/20 text-gold-300 border border-gold-400/30 px-2 py-0.5 rounded-full whitespace-nowrap">
+                <span className="text-[9px] xl:text-[10px] font-sans font-bold uppercase tracking-wider bg-gold-500/20 text-gold-300 border border-gold-400/30 px-1.5 xl:px-2 py-0.5 rounded-full whitespace-nowrap">
                   Est. 1981
                 </span>
               </div>
-              <p className="text-[11px] text-slate-300 whitespace-nowrap mt-0.5">
-                Louis W. Ringger Jr. • West TN Bankruptcy
+              <p className="text-[10px] xl:text-[11px] text-slate-300 whitespace-nowrap mt-0.5">
+                Louis W. Ringger Jr. <span className="hidden xl:inline">• West TN Bankruptcy</span>
               </p>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-7 text-sm font-medium text-slate-200">
+          <nav className="hidden lg:flex items-center gap-3 xl:gap-5 text-[13px] xl:text-sm font-medium text-slate-200">
             {/* Solutions Dropdown */}
             <div className="relative group py-6">
               <Link
@@ -161,7 +161,8 @@ export function Header() {
             <div className="relative group py-6">
               <button className="flex items-center gap-1 hover:text-gold-400 transition whitespace-nowrap cursor-pointer">
                 <MapPin className="w-3.5 h-3.5 text-gold-400 shrink-0" />
-                <span>Counties Served</span>
+                <span className="hidden xl:inline">Counties Served</span>
+                <span className="xl:hidden">Counties</span>
                 <ChevronDown className="w-3.5 h-3.5 opacity-70 group-hover:rotate-180 transition" />
               </button>
               <div className="absolute left-0 top-full w-72 bg-navy-900 border border-white/15 rounded-xl shadow-2xl p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
@@ -197,10 +198,11 @@ export function Header() {
 
             <Link
               href="/intake"
-              className="flex items-center gap-1.5 text-slate-200 hover:text-gold-400 transition whitespace-nowrap"
+              className="flex items-center gap-1 text-slate-200 hover:text-gold-400 transition whitespace-nowrap"
             >
               <FileCheck className="w-3.5 h-3.5 text-gold-400 shrink-0" />
-              <span>Intake Questionnaire</span>
+              <span className="hidden xl:inline">Client Intake</span>
+              <span className="xl:hidden">Intake</span>
             </Link>
 
             <Link
@@ -212,19 +214,19 @@ export function Header() {
           </nav>
 
           {/* Right Call & Free Consultation CTAs */}
-          <div className="hidden md:flex items-center gap-3 shrink-0">
+          <div className="hidden lg:flex items-center gap-2 xl:gap-2.5 shrink-0">
             <a
               href={FIRM_INFO.phoneHref}
-              className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-white/15 hover:border-gold-400/60 bg-white/5 transition whitespace-nowrap"
+              className="flex items-center gap-2 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-xl border border-white/15 hover:border-gold-400/60 bg-white/5 transition whitespace-nowrap"
             >
-              <div className="w-8 h-8 rounded-lg bg-gold-500/20 text-gold-400 flex items-center justify-center shrink-0">
-                <Phone className="w-4 h-4" />
+              <div className="w-7 h-7 xl:w-8 xl:h-8 rounded-lg bg-gold-500/20 text-gold-400 flex items-center justify-center shrink-0">
+                <Phone className="w-3.5 h-3.5 xl:w-4 xl:h-4" />
               </div>
               <div className="text-left leading-tight">
-                <div className="text-[10px] uppercase tracking-wider text-gold-400 font-bold whitespace-nowrap">
+                <div className="text-[9px] xl:text-[10px] uppercase tracking-wider text-gold-400 font-bold whitespace-nowrap">
                   Call Jackson Office
                 </div>
-                <div className="text-sm font-extrabold text-white whitespace-nowrap">
+                <div className="text-xs xl:text-sm font-extrabold text-white whitespace-nowrap">
                   {FIRM_INFO.phoneFormatted}
                 </div>
               </div>
@@ -232,9 +234,9 @@ export function Header() {
 
             <Link
               href="/book-online"
-              className="bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-navy-950 font-extrabold text-xs sm:text-sm px-4 py-3 rounded-xl shadow-lg shadow-gold-500/20 flex items-center gap-2 whitespace-nowrap transition transform hover:-translate-y-0.5"
+              className="bg-gradient-to-r from-gold-500 to-gold-400 hover:from-gold-400 hover:to-gold-300 text-navy-950 font-extrabold text-xs xl:text-sm px-3 xl:px-4 py-2.5 xl:py-3 rounded-xl shadow-lg shadow-gold-500/20 flex items-center gap-1.5 xl:gap-2 whitespace-nowrap transition transform hover:-translate-y-0.5"
             >
-              <Calendar className="w-4 h-4 shrink-0" />
+              <Calendar className="w-3.5 h-3.5 xl:w-4 xl:h-4 shrink-0" />
               <span>Free Consultation</span>
             </Link>
           </div>
