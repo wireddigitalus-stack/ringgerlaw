@@ -307,8 +307,7 @@ export default function AdminDashboardPage() {
 
           {pinError && (
             <p className="text-xs text-center text-red-400 font-semibold mb-4">
-              Invalid 6-digit PIN. Please try again (Default PIN:{" "}
-              <span className="font-mono text-white">731501</span>).
+              Invalid 6-digit PIN. Please try again.
             </p>
           )}
 
@@ -368,21 +367,6 @@ export default function AdminDashboardPage() {
               aria-label="Backspace"
             >
               <Delete className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Quick Demo Hint for Client Review */}
-          <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-[#A8E028]" /> Office PIN:{" "}
-              <code className="text-white font-bold bg-white/10 px-1.5 py-0.5 rounded">731501</code>
-            </span>
-            <button
-              type="button"
-              onClick={() => verifyPin(DEFAULT_PIN)}
-              className="text-[#A8E028] hover:underline font-bold cursor-pointer"
-            >
-              1-Click Auto-Fill →
             </button>
           </div>
         </div>
