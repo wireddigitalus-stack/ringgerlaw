@@ -73,7 +73,7 @@ export function AiConciergeWidget() {
     if (!leadForm.firstName || !leadForm.phone) return;
     const { captureOrGetAttribution } = await import("@/lib/attribution");
     const attribution = captureOrGetAttribution();
-    await fetch("/api/leads", {
+    const res = await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -92,6 +92,17 @@ export function AiConciergeWidget() {
           messages.filter((m) => m.sender === "user").slice(-1)[0]?.text || "Direct callback"
         }"`,
       }),
+    });
+    const data = await res.json();
+    const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
+    trackGoogleAdsConversion({
+      action: "AI_CONCIERGE_LEAD",
+      leadId: data?.lead?.id,
+      firstName: leadForm.firstName,
+      phone: leadForm.phone,
+      county: "Madison County (Jackson)",
+      primaryConcern: leadForm.primaryConcern,
+      captureMethod: "AI Debt Concierge",
     });
     setLeadSubmitted(true);
   }

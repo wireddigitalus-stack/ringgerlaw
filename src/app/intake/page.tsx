@@ -111,6 +111,18 @@ export default function ClientIntakePortalPage() {
       });
       const data = await res.json();
       if (data.intake) {
+        const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
+        const nameParts = form.fullName.trim().split(" ");
+        trackGoogleAdsConversion({
+          action: "COURT_INTAKE_SUBMIT",
+          leadId: data.intake.id,
+          firstName: nameParts[0] || form.fullName,
+          lastName: nameParts.slice(1).join(" "),
+          phone: form.phone,
+          email: form.email,
+          primaryConcern: "Full Court Intake Packet",
+          captureMethod: "5-Step Court Intake Questionnaire",
+        });
         setSavedRecord(data.intake);
         setStep(6);
       }

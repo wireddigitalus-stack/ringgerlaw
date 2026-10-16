@@ -17,6 +17,7 @@ import { FIRM_INFO } from "@/lib/seo-data";
 import { LeadRecord } from "@/lib/db";
 import { DebtReliefQuiz } from "@/components/DebtReliefQuiz";
 import { captureOrGetAttribution } from "@/lib/attribution";
+import { trackGoogleAdsConversion } from "@/lib/google-ads";
 
 const HELP_OPTIONS = [
   "Eliminate Credit Card & Medical Debt",
@@ -112,6 +113,17 @@ export function FastCaptureCard({
       });
       const data = await res.json();
       if (data.lead) {
+        trackGoogleAdsConversion({
+          action: "LEAD_FORM_SUBMIT",
+          leadId: data.lead.id,
+          firstName,
+          lastName,
+          phone,
+          email,
+          county,
+          primaryConcern,
+          captureMethod: "Free Consultation Form",
+        });
         setSubmittedLead(data.lead);
       }
     } finally {

@@ -100,6 +100,18 @@ export function DebtReliefQuiz({ defaultSource = "/" }: { defaultSource?: string
       });
       const data = await res.json();
       if (data.lead) {
+        const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
+        trackGoogleAdsConversion({
+          action: "QUIZ_QUALIFIED_LEAD",
+          leadId: data.lead.id,
+          firstName,
+          lastName,
+          phone,
+          email,
+          county,
+          primaryConcern,
+          captureMethod: "60-Sec Qualifier Quiz",
+        });
         setCreatedLead(data.lead);
         setStep(4);
       }

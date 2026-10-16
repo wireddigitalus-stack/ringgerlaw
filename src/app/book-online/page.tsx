@@ -63,7 +63,21 @@ export default function BookOnlinePage() {
         }),
       });
       const data = await res.json();
-      if (data.lead) setBookedLead(data.lead);
+      if (data.lead) {
+        const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
+        trackGoogleAdsConversion({
+          action: "CONSULTATION_BOOKED",
+          leadId: data.lead.id,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          phone: form.phone,
+          email: form.email,
+          county: form.county,
+          primaryConcern: form.primaryConcern,
+          captureMethod: "Online Booking Page",
+        });
+        setBookedLead(data.lead);
+      }
     } finally {
       setSubmitting(false);
     }

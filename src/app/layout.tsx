@@ -48,7 +48,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-  const gadsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
+  const gadsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID || "AW-1648677882";
   const primaryTagId = gaId || gadsId;
 
   const legalSchema = {
@@ -126,8 +126,8 @@ export default function RootLayout({
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                ${gaId ? `gtag('config', '${gaId}');` : ""}
-                ${gadsId ? `gtag('config', '${gadsId}');` : ""}
+                ${gaId ? `gtag('config', '${gaId}', { allow_enhanced_conversions: true });` : ""}
+                ${gadsId ? `gtag('config', '${gadsId}', { allow_enhanced_conversions: true });` : ""}
               `}
             </Script>
           </>

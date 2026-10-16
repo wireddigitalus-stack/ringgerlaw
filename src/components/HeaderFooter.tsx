@@ -38,7 +38,7 @@ export function Header() {
     try {
       const { captureOrGetAttribution } = await import("@/lib/attribution");
       const attribution = captureOrGetAttribution();
-      await fetch("/api/leads", {
+      const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -55,6 +55,17 @@ export function Header() {
           captureMethod: "Emergency Hotline Bar",
           notes: "URGENT CALLBACK REQUESTED via Top Emergency Protection Bar",
         }),
+      });
+      const data = await res.json();
+      const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
+      trackGoogleAdsConversion({
+        action: "EMERGENCY_STAY_LEAD",
+        leadId: data?.lead?.id,
+        firstName: emergencyForm.firstName,
+        phone: emergencyForm.phone,
+        county: emergencyForm.county,
+        primaryConcern: emergencyForm.primaryConcern,
+        captureMethod: "Emergency Hotline Bar",
       });
       setEmergencySubmitted(true);
     } finally {

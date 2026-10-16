@@ -26,9 +26,18 @@ import {
   Megaphone,
   Smartphone,
   Monitor,
+  Copy,
+  CheckCircle2,
+  Download,
+  ExternalLink,
 } from "lucide-react";
 import { LeadRecord, IntakeRecord, AnalyticsSummary, LeadStatus } from "@/lib/db";
 import { TrafficChannel } from "@/lib/attribution";
+import {
+  GOOGLE_ADS_ACCOUNT_ID,
+  GOOGLE_ADS_TAG_ID,
+  GOOGLE_ADS_TRACKING_TEMPLATE,
+} from "@/lib/google-ads";
 
 const DEFAULT_PIN = "731501"; // Jackson area code (731) + office line ending (501)
 
@@ -105,6 +114,7 @@ export default function AdminDashboardPage() {
   const [filterUrgency, setFilterUrgency] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIntake, setSelectedIntake] = useState<IntakeRecord | null>(null);
+  const [copiedTemplate, setCopiedTemplate] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -209,6 +219,43 @@ export default function AdminDashboardPage() {
       body: JSON.stringify({ resetAll: true }),
     });
     await loadDashboardData();
+  }
+
+  function copyGoogleAdsTemplate() {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(GOOGLE_ADS_TRACKING_TEMPLATE);
+      setCopiedTemplate(true);
+      setTimeout(() => setCopiedTemplate(false), 2500);
+    }
+  }
+
+  function exportGoogleAdsCsv() {
+    const header = [
+      "Parameters:TimeZone=America/Chicago",
+      "Google Click ID,Conversion Name,Conversion Time,Conversion Value,Conversion Currency,Lead ID,Client Name,Phone,Status,Campaign,Keyword",
+    ];
+    const rows = leads.map((l) => {
+      const gclid = l.clickId || "";
+      const convName =
+        l.status === "RETAINED"
+          ? "Retained Bankruptcy Client"
+          : l.captureMethod === "Intake Questionnaire"
+          ? "Court Intake Submitted"
+          : "Bankruptcy Consultation Lead";
+      const convTime = new Date(l.createdAt).toISOString().replace("T", " ").slice(0, 19);
+      const val = l.estimatedCaseValue || 0;
+      const clientName = `${l.firstName} ${l.lastName || ""}`.trim().replace(/,/g, " ");
+      return `${gclid},"${convName}","${convTime}",${val},USD,${l.id},"${clientName}","${l.phone}",${l.status},"${l.utmCampaign || ""}","${l.utmTerm || ""}"`;
+    });
+    const csvContent = [...header, ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `ringgerlaw-google-ads-${GOOGLE_ADS_ACCOUNT_ID}-conversions.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   // ---------------------------------------------------------------------------
@@ -841,6 +888,88 @@ export default function AdminDashboardPage() {
         {/* TAB 3: LIVE INCOMING TRAFFIC (GOOGLE SEARCH, ADS, AI & ORGANIC) */}
         {activeTab === "seo" && analytics && (
           <div className="space-y-6">
+            {/* GOOGLE ADS ACCOUNT #164-867-7882 COMMAND & CONVERSION HUB */}
+            <div className="bg-gradient-to-r from-[#0D1627] via-[#17233D] to-[#0D1627] rounded-2xl p-6 border border-amber-500/40 shadow-2xl space-y-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="inline-flex items-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-extrabold uppercase px-2.5 py-0.5 rounded-full">
+                      <Megaphone className="w-3.5 h-3.5" /> Google Ads Account #{GOOGLE_ADS_ACCOUNT_ID}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+                      ● Tag {GOOGLE_ADS_TAG_ID} • Enhanced Conversions Active
+                    </span>
+                  </div>
+                  <h2 className="text-lg sm:text-xl font-serif font-bold text-white">
+                    Google Ads Conversion Tracking &amp; Keyword Attribution Hub
+                  </h2>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Automatically fires conversion events + hashed Enhanced User Data across all 6 forms and every{" "}
+                    <strong className="text-[#A8E028]">(731) 421-1501</strong> click-to-call button.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={exportGoogleAdsCsv}
+                    className="bg-amber-400 hover:bg-amber-300 text-black text-xs font-extrabold px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-1.5 cursor-pointer transition"
+                  >
+                    <Download className="w-4 h-4" /> Export Google Ads Conversions (CSV)
+                  </button>
+                  <a
+                    href="/?utm_source=google&utm_medium=cpc&utm_campaign=jackson_bankruptcy_search&utm_term=bankruptcy+attorney+jackson+tn&gclid=EAIaIQobChMI_test_1648677882"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-white/10 hover:bg-white/15 text-white border border-white/15 text-xs font-bold px-3.5 py-2.5 rounded-xl flex items-center gap-1.5 transition"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 text-amber-300" /> Simulate Google Ad Click
+                  </a>
+                </div>
+              </div>
+
+              {/* Account-Level Tracking Template Box */}
+              <div className="bg-[#070D19] rounded-xl p-4 border border-white/10 space-y-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                    Step 1 in Google Ads ({GOOGLE_ADS_ACCOUNT_ID}) → Admin → Account Settings → Tracking Template:
+                  </div>
+                  <button
+                    type="button"
+                    onClick={copyGoogleAdsTemplate}
+                    className="text-xs font-bold bg-[#A8E028]/15 hover:bg-[#A8E028]/25 text-[#A8E028] border border-[#A8E028]/40 px-3 py-1 rounded-lg flex items-center gap-1.5 cursor-pointer transition"
+                  >
+                    {copiedTemplate ? (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Copied Tracking Template!
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" /> Copy Tracking Template
+                      </>
+                    )}
+                  </button>
+                </div>
+                <code className="block text-[11px] font-mono text-slate-200 bg-black/40 p-2.5 rounded-lg border border-white/5 overflow-x-auto">
+                  {GOOGLE_ADS_TRACKING_TEMPLATE}
+                </code>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 text-[11px] text-slate-400">
+                  <div>
+                    <strong className="text-white">✓ 6 Form Conversions Tracked:</strong>{" "}
+                    `generate_lead`, `qualify_lead`, `schedule_consultation`, `submit_court_intake`
+                  </div>
+                  <div>
+                    <strong className="text-white">✓ Phone Call Clicks Tracked:</strong>{" "}
+                    `click_to_call` fired on every `(731) 421-1501` tap
+                  </div>
+                  <div>
+                    <strong className="text-white">✓ First-Touch `gclid` Saved:</strong>{" "}
+                    Persisted in `localStorage` &amp; attached to every Supabase lead row
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* 5 Acquisition Channel Breakdown Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               <div className="bg-[#0D1627] rounded-2xl p-4 border border-emerald-500/30">
