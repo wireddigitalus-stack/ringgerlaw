@@ -351,7 +351,6 @@ export default function AdminDashboardPage() {
     .filter((l) => l.status === "RETAINED")
     .reduce((sum, l) => sum + (l.estimatedCaseValue || 0), 0);
   const emergencyCount = leads.filter((l) => l.urgency === "EMERGENCY_FORECLOSURE_REPO").length;
-  const chapter13Count = leads.filter((l) => l.recommendedChapter.includes("Chapter 13")).length;
 
   const filteredLeads = leads.filter((l) => {
     if (filterUrgency !== "ALL" && l.urgency !== filterUrgency) return false;
@@ -463,7 +462,7 @@ export default function AdminDashboardPage() {
             </div>
             <div className="text-xs text-slate-400 mt-1.5">
               <strong className="text-emerald-400">${retainedValue.toLocaleString()}</strong> Retained •{" "}
-              {chapter13Count} Ch. 13 Cases
+              <strong className="text-white">{leads.length}</strong> Active {leads.length === 1 ? "Case" : "Cases"}
             </div>
           </div>
 
