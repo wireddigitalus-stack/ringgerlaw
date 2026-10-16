@@ -83,12 +83,16 @@ export default function HomePage() {
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-[68px] xl:text-[74px] font-sans font-extrabold tracking-tight leading-[1.05] drop-shadow-md">
-            <span className="text-[#A8E028]">Eliminate</span>{" "}
-            <span className="text-white">Credit Card &amp; Medical Debt.</span>
+            <span className="block">
+              <span className="text-[#A8E028]">Eliminate</span>{" "}
+              <span className="text-white">Credit Card</span>
+            </span>
+            <span className="block text-white">&amp; Medical Debt.</span>
             <span className="block mt-1">
               <span className="text-[#A8E028]">Stop</span>{" "}
-              <span className="text-white">Foreclosures &amp; Repossessions.</span>
+              <span className="text-white">Foreclosures</span>
             </span>
+            <span className="block text-white">&amp; Repossessions.</span>
             <span className="block text-[#A8E028] text-3xl sm:text-5xl lg:text-[54px] mt-3">
               In just 4 easy steps
             </span>
