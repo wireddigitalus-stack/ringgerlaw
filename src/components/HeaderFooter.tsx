@@ -587,11 +587,19 @@ export function Footer() {
           <p className="max-w-4xl leading-relaxed">
             <strong>Mandatory Federal Disclosure (11 U.S.C. § 528):</strong> The Law Offices of Louis W. Ringger (Ringger Law) is a Federally Designated Debt Relief Agency. We help people file for bankruptcy relief under the U.S. Bankruptcy Code. Information on this website is for general educational purposes in Tennessee and does not establish an attorney-client relationship until a formal agreement is signed.
           </p>
-          <div className="flex items-center gap-4 text-slate-500 whitespace-nowrap">
-            <span>© {new Date().getFullYear()} Ringger Law • Jackson, TN</span>
-            <Link href="/admin" className="text-slate-500 hover:text-gold-400 underline">
-              Staff Login / Admin
-            </Link>
+          <div className="flex flex-col sm:flex-row md:flex-col items-start sm:items-center md:items-end gap-1.5 text-slate-400 whitespace-nowrap">
+            <div className="flex items-center gap-4">
+              <span>© {new Date().getFullYear()} Ringger Law • Jackson, TN</span>
+              <Link href="/admin" className="text-slate-400 hover:text-gold-400 underline">
+                Staff Login / Admin
+              </Link>
+            </div>
+            <div className="text-[11px] text-slate-400">
+              AI-Powered Website by{" "}
+              <span className="font-extrabold tracking-wider text-gold-400">
+                WIRED DIGITAL CREATIVE
+              </span>
+            </div>
           </div>
         </div>
       </div>
