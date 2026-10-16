@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { usePathname } from "next/navigation";
 import { MessageSquare, X, Send, Sparkles, Phone, CheckCircle2, ShieldAlert } from "lucide-react";
 import { FIRM_INFO } from "@/lib/seo-data";
 
@@ -34,6 +35,7 @@ function getSmartLegalResponse(userQuery: string): string {
 }
 
 export function AiConciergeWidget() {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -49,6 +51,10 @@ export function AiConciergeWidget() {
     phone: "",
     primaryConcern: "AI Chat Consultation Request",
   });
+
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
 
   function sendPrompt(text: string) {
     if (!text.trim()) return;
