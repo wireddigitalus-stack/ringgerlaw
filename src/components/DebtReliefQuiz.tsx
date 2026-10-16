@@ -76,10 +76,13 @@ export function DebtReliefQuiz({ defaultSource = "/" }: { defaultSource?: string
     if (!firstName || !phone) return;
     setSubmitting(true);
     try {
+      const { captureOrGetAttribution } = await import("@/lib/attribution");
+      const attribution = captureOrGetAttribution();
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(attribution || {}),
           firstName,
           lastName,
           phone,

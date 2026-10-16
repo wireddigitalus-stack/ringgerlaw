@@ -16,6 +16,7 @@ import {
 import { FIRM_INFO } from "@/lib/seo-data";
 import { LeadRecord } from "@/lib/db";
 import { DebtReliefQuiz } from "@/components/DebtReliefQuiz";
+import { captureOrGetAttribution } from "@/lib/attribution";
 
 const HELP_OPTIONS = [
   "Eliminate Credit Card & Medical Debt",
@@ -86,11 +87,13 @@ export function FastCaptureCard({
       const parts = fullName.trim().split(" ");
       const firstName = parts[0] || fullName;
       const lastName = parts.slice(1).join(" ");
+      const attribution = captureOrGetAttribution();
 
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(attribution || {}),
           firstName,
           lastName,
           phone,

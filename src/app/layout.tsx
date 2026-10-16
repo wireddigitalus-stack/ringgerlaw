@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { Header, Footer } from "@/components/HeaderFooter";
 import { AiConciergeWidget } from "@/components/AiConciergeWidget";
+import { TrafficTracker } from "@/components/TrafficTracker";
 import { FIRM_INFO } from "@/lib/seo-data";
 
 export const metadata: Metadata = {
@@ -45,6 +47,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const gadsId = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID;
+  const primaryTagId = gaId || gadsId;
+
   const legalSchema = {
     "@context": "https://schema.org",
     "@graph": [
@@ -109,8 +115,26 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(legalSchema) }}
         />
+        {primaryTagId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${primaryTagId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics-ads" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                ${gaId ? `gtag('config', '${gaId}');` : ""}
+                ${gadsId ? `gtag('config', '${gadsId}');` : ""}
+              `}
+            </Script>
+          </>
+        )}
       </head>
       <body className="min-h-screen flex flex-col">
+        <TrafficTracker />
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />

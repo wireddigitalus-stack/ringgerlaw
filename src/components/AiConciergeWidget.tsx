@@ -65,10 +65,13 @@ export function AiConciergeWidget() {
   async function submitChatLead(e: React.FormEvent) {
     e.preventDefault();
     if (!leadForm.firstName || !leadForm.phone) return;
+    const { captureOrGetAttribution } = await import("@/lib/attribution");
+    const attribution = captureOrGetAttribution();
     await fetch("/api/leads", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        ...(attribution || {}),
         firstName: leadForm.firstName,
         phone: leadForm.phone,
         email: "",

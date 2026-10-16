@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { getSupabaseClient, SUPABASE_URL } from "@/lib/supabase";
+import { TrafficChannel } from "@/lib/attribution";
 
 export type UrgencyLevel = "EMERGENCY_FORECLOSURE_REPO" | "WAGE_GARNISHMENT" | "STANDARD_DEBT_RELIEF";
 export type LeadStatus = "NEW" | "CONTACTED" | "CONSULTATION_BOOKED" | "INTAKE_COMPLETED" | "RETAINED" | "ARCHIVED";
@@ -27,6 +28,17 @@ export interface LeadRecord {
   notes?: string;
   status: LeadStatus;
   estimatedCaseValue: number;
+  // First-Touch Traffic & Ad Attribution Fields
+  trafficChannel?: TrafficChannel;
+  trafficSourceLabel?: string;
+  referrerUrl?: string;
+  landingPage?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  clickId?: string;
+  deviceType?: "Mobile" | "Tablet" | "Desktop";
 }
 
 export interface IntakeRecord {
@@ -83,10 +95,29 @@ export interface IntakeRecord {
   signatureDate: string;
 }
 
+export interface TrafficEventRecord {
+  id: string;
+  timestamp: string;
+  trafficChannel: TrafficChannel;
+  trafficSourceLabel: string;
+  referrerHost: string;
+  referrerUrl: string;
+  landingPage: string;
+  currentPath: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  utmTerm?: string;
+  clickId?: string;
+  deviceType: "Mobile" | "Tablet" | "Desktop";
+}
+
 export interface AnalyticsSummary {
   totalVisitors30d: number;
   organicSearchVisitors30d: number;
+  googleAdsVisitors30d: number;
   aiSearchReferrals30d: number;
+  socialReferralVisitors30d: number;
   directVisitors30d: number;
   equivalentGoogleAdsSavingsMonthly: number;
   averageCpcBankruptcyJacksonTN: number;
@@ -103,6 +134,7 @@ export interface AnalyticsSummary {
     leads: number;
     percentage: number;
   }[];
+  recentTrafficEvents: TrafficEventRecord[];
 }
 
 export interface DatabaseSchema {
@@ -115,278 +147,132 @@ export interface DatabaseSchema {
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const DB_FILE = path.join(DATA_DIR, "ringgerlaw-db.json");
+const TELEMETRY_ROW_ID = "__ANALYTICS_TELEMETRY__";
+
+const DEFAULT_KEYWORDS = [
+  {
+    keyword: "bankruptcy attorney jackson tn",
+    position: 1,
+    monthlyVolume: 480,
+    cpcEquivalent: 68.5,
+    landingPage: "/",
+    aiCited: true,
+  },
+  {
+    keyword: "stop foreclosure jackson tn lawyer",
+    position: 1,
+    monthlyVolume: 210,
+    cpcEquivalent: 84.0,
+    landingPage: "/practice/stop-foreclosure-jackson-tn",
+    aiCited: true,
+  },
+  {
+    keyword: "no money down bankruptcy jackson tn",
+    position: 1,
+    monthlyVolume: 320,
+    cpcEquivalent: 62.0,
+    landingPage: "/practice/no-money-down-bankruptcy-jackson-tn",
+    aiCited: true,
+  },
+  {
+    keyword: "chapter 7 vs chapter 13 tennessee exemptions",
+    position: 1,
+    monthlyVolume: 590,
+    cpcEquivalent: 51.0,
+    landingPage: "/resources/tennessee-bankruptcy-exemptions-means-test",
+    aiCited: true,
+  },
+  {
+    keyword: "stop wage garnishment attorney west tennessee",
+    position: 2,
+    monthlyVolume: 190,
+    cpcEquivalent: 69.0,
+    landingPage: "/practice/stop-wage-garnishment-jackson-tn",
+    aiCited: true,
+  },
+  {
+    keyword: "bankruptcy lawyer gibson county tn",
+    position: 1,
+    monthlyVolume: 140,
+    cpcEquivalent: 48.0,
+    landingPage: "/locations/gibson-county-tn",
+    aiCited: true,
+  },
+];
+
+const COUNTY_BUCKETS = [
+  "Madison County (Jackson)",
+  "Gibson County (Milan / Humboldt)",
+  "Haywood County (Brownsville)",
+  "Henderson County (Lexington)",
+  "Chester County (Henderson)",
+  "Crockett County (Alamo)",
+];
 
 const INITIAL_DB: DatabaseSchema = {
-  leads: [
-    {
-      id: "LD-2026-1091",
-      createdAt: "2026-10-15T16:14:00-04:00",
-      firstName: "Marcus",
-      lastName: "Henderson",
-      phone: "(731) 555-0194",
-      email: "m.henderson731@gmail.com",
-      county: "Madison County (Jackson)",
-      primaryConcern: "Stop Foreclosure & Catch Up Mortgage",
-      estimatedDebt: 68500,
-      ownsHome: true,
-      behindOnPayments: true,
-      urgency: "EMERGENCY_FORECLOSURE_REPO",
-      recommendedChapter: "Chapter 13 (Asset Protection Plan)",
-      sourcePage: "/practice/stop-foreclosure-jackson-tn",
-      captureMethod: "60-Sec Qualifier Quiz",
-      preferredDate: "2026-10-16",
-      preferredTime: "10:00 AM",
-      notes: "Received notice of trustee sale set for Nov 4. Wants to save family home on North Highland and consolidate $22k in medical bills from Jackson-Madison County General.",
-      status: "CONSULTATION_BOOKED",
-      estimatedCaseValue: 3800,
-    },
-    {
-      id: "LD-2026-1090",
-      createdAt: "2026-10-15T13:42:00-04:00",
-      firstName: "Tammy",
-      lastName: "Wilkins",
-      phone: "(731) 555-0148",
-      email: "tammy.wilkins82@yahoo.com",
-      county: "Gibson County (Milan / Humboldt)",
-      primaryConcern: "Eliminate Credit Card & Medical Debt",
-      estimatedDebt: 41200,
-      ownsHome: false,
-      behindOnPayments: true,
-      urgency: "STANDARD_DEBT_RELIEF",
-      recommendedChapter: "Chapter 7 ($0 Down Eligible)",
-      sourcePage: "/locations/gibson-county-tn",
-      captureMethod: "60-Sec Qualifier Quiz",
-      preferredDate: "2026-10-16",
-      preferredTime: "2:00 PM",
-      notes: "Qualifies for $0 Down Chapter 7. Overwhelmed by 6 credit cards and ER medical bills. Wants to keep her 2020 Honda CR-V.",
-      status: "NEW",
-      estimatedCaseValue: 1850,
-    },
-    {
-      id: "LD-2026-1089",
-      createdAt: "2026-10-15T09:18:00-04:00",
-      firstName: "Derrick",
-      lastName: "Caldwell",
-      phone: "(731) 555-0277",
-      email: "dcaldwell.tn@outlook.com",
-      county: "Madison County (Jackson)",
-      primaryConcern: "Stop Wage Garnishment Immediately",
-      estimatedDebt: 29400,
-      ownsHome: false,
-      behindOnPayments: true,
-      urgency: "WAGE_GARNISHMENT",
-      recommendedChapter: "Chapter 7 ($0 Down Eligible)",
-      sourcePage: "/practice/stop-wage-garnishment-jackson-tn",
-      captureMethod: "Emergency Hotline Bar",
-      preferredDate: "2026-10-15",
-      preferredTime: "4:00 PM",
-      notes: "Collection law firm just served payroll garnishment at his plant job in Jackson. Taking 25% of his check starting Friday. Needs immediate automatic stay.",
-      status: "INTAKE_COMPLETED",
-      estimatedCaseValue: 1850,
-    },
-    {
-      id: "LD-2026-1088",
-      createdAt: "2026-10-14T21:50:00-04:00",
-      firstName: "Brenda",
-      lastName: "Montgomery",
-      phone: "(731) 555-0831",
-      email: "brenda.m1974@gmail.com",
-      county: "Haywood County (Brownsville)",
-      primaryConcern: "Stop Vehicle Repossession",
-      estimatedDebt: 34000,
-      ownsHome: true,
-      behindOnPayments: true,
-      urgency: "EMERGENCY_FORECLOSURE_REPO",
-      recommendedChapter: "Chapter 13 (Asset Protection Plan)",
-      sourcePage: "/practice/stop-repossession-jackson-tn",
-      captureMethod: "AI Debt Concierge",
-      preferredDate: "2026-10-15",
-      preferredTime: "11:00 AM",
-      notes: "2 months behind on F-150 truck payment, lender threatened repo. Needs truck to commute from Brownsville to Jackson.",
-      status: "RETAINED",
-      estimatedCaseValue: 3800,
-    },
-    {
-      id: "LD-2026-1087",
-      createdAt: "2026-10-14T15:10:00-04:00",
-      firstName: "Kenneth & Sarah",
-      lastName: "Pruitt",
-      phone: "(731) 555-0612",
-      email: "kpruitt.family@gmail.com",
-      county: "Henderson County (Lexington)",
-      primaryConcern: "Eliminate Credit Card & Medical Debt",
-      estimatedDebt: 84000,
-      ownsHome: true,
-      behindOnPayments: false,
-      urgency: "STANDARD_DEBT_RELIEF",
-      recommendedChapter: "Chapter 7 ($0 Down Eligible)",
-      sourcePage: "/practice/chapter-7-bankruptcy-jackson-tn",
-      captureMethod: "Free Consultation Form",
-      preferredDate: "2026-10-14",
-      preferredTime: "1:00 PM",
-      notes: "Mortgage is current (~$26k equity, fully exempt under TN homestead exemption for married couple). Wiping out $84k in unsecured debt.",
-      status: "RETAINED",
-      estimatedCaseValue: 2200,
-    },
-    {
-      id: "LD-2026-1086",
-      createdAt: "2026-10-13T18:22:00-04:00",
-      firstName: "Patricia",
-      lastName: "Vaughn",
-      phone: "(731) 555-0911",
-      email: "pvaughn_chester@gmail.com",
-      county: "Chester County (Henderson)",
-      primaryConcern: "Eliminate Medical & Cash Advance Debt",
-      estimatedDebt: 19500,
-      ownsHome: false,
-      behindOnPayments: true,
-      urgency: "STANDARD_DEBT_RELIEF",
-      recommendedChapter: "Chapter 7 ($0 Down Eligible)",
-      sourcePage: "/locations/chester-county-tn",
-      captureMethod: "60-Sec Qualifier Quiz",
-      status: "CONTACTED",
-      notes: "Trapped in 4 high-interest cash advance / payday loans in Henderson plus hospital bills.",
-      estimatedCaseValue: 1850,
-    },
-    {
-      id: "LD-2026-1085",
-      createdAt: "2026-10-12T11:05:00-04:00",
-      firstName: "Robert",
-      lastName: "Alston",
-      phone: "(731) 555-0443",
-      email: "ralston.crockett@yahoo.com",
-      county: "Crockett County (Alamo / Bells)",
-      primaryConcern: "Stop Foreclosure & Tax Debt",
-      estimatedDebt: 92000,
-      ownsHome: true,
-      behindOnPayments: true,
-      urgency: "EMERGENCY_FORECLOSURE_REPO",
-      recommendedChapter: "Chapter 13 (Asset Protection Plan)",
-      sourcePage: "/locations/crockett-county-tn",
-      captureMethod: "60-Sec Qualifier Quiz",
-      status: "RETAINED",
-      notes: "Filing Chapter 13 repayment plan to cure $11,400 mortgage arrears over 60 months and halt collection calls.",
-      estimatedCaseValue: 3800,
-    },
-  ],
-  intakes: [
-    {
-      id: "INT-2026-401",
-      createdAt: "2026-10-15T10:05:00-04:00",
-      leadId: "LD-2026-1089",
-      fullName: "Derrick Wayne Caldwell",
-      phone: "(731) 555-0277",
-      email: "dcaldwell.tn@outlook.com",
-      mailingAddress: "418 Old Hickory Blvd, Apt 12B, Jackson, TN 38305",
-      birthday: "1984-06-14",
-      ssnLast4: "4829",
-      maritalStatus: "Single",
-      filingWithSpouse: false,
-      dependents: "1 Son (Age 9)",
-      priorBankruptcyLast10Years: false,
-      realEstateOwned: "None (Renting apartment)",
-      mortgagePaymentsCurrent: "N/A",
-      receivedForeclosureNotice: false,
-      vehiclesOwned: "2018 Chevrolet Malibu (Financed with Ally Auto, balance $6,200, current on payments)",
-      recreationalVehicles: "None",
-      paysChildSupportOrAlimony: true,
-      supportRecipientDetails: "Jessica Caldwell — $450/mo current via wage assignment",
-      unpaidTaxes: "None",
-      hasCourtJudgmentsOrLiens: true,
-      judgmentDetails: "Midland Credit Management v. Caldwell, Madison County General Sessions Court, Case #26-GS-1942 (Wage Garnishment served 10/14/2026)",
-      creditCardsList: "Capital One ($6,400), Synchrony CareCredit ($4,800), Discover ($7,100)",
-      cashAdvanceLoans: "Advance Financial 24/7 ($2,400)",
-      rentToOwnItems: "None",
-      payFrequency: "Bi-Weekly",
-      grossMonthlyIncome: "$3,850",
-      otherIncomeSources: "None",
-      involvedInPendingLawsuitPayout: false,
-      rentOrMortgageMonthly: "$1,150",
-      taxesIncludedInMortgage: false,
-      insuranceIncludedInMortgage: false,
-      monthlyFoodExpense: "$650",
-      monthlyUtilitiesAndPhone: "$340",
-      monthlyMedicalExpense: "$120",
-      monthlyTransportationExpense: "$280",
-      monthlyCarPayments: "$315",
-      debtsInMaidenOrOtherName: false,
-      expectingLargeSumNextYear: false,
-      transferredPropertyLast2Years: false,
-      usedCreditCardsLast90Days: false,
-      movedFromAnotherStateLast2Years: false,
-      hasCosignersOnDebts: false,
-      hasUnfiledTaxReturns: false,
-      debtorSignature: "Derrick Wayne Caldwell",
-      signatureDate: "2026-10-15",
-    },
-  ],
+  leads: [],
+  intakes: [],
   analytics: {
-    totalVisitors30d: 3480,
-    organicSearchVisitors30d: 2410,
-    aiSearchReferrals30d: 685,
-    directVisitors30d: 385,
-    equivalentGoogleAdsSavingsMonthly: 14850,
+    totalVisitors30d: 0,
+    organicSearchVisitors30d: 0,
+    googleAdsVisitors30d: 0,
+    aiSearchReferrals30d: 0,
+    socialReferralVisitors30d: 0,
+    directVisitors30d: 0,
+    equivalentGoogleAdsSavingsMonthly: 0,
     averageCpcBankruptcyJacksonTN: 64.5,
-    topKeywords: [
-      {
-        keyword: "bankruptcy attorney jackson tn",
-        position: 1,
-        monthlyVolume: 480,
-        cpcEquivalent: 78.5,
-        landingPage: "/",
-        aiCited: true,
-      },
-      {
-        keyword: "stop foreclosure lawyer jackson tn",
-        position: 1,
-        monthlyVolume: 210,
-        cpcEquivalent: 84.0,
-        landingPage: "/practice/stop-foreclosure-jackson-tn",
-        aiCited: true,
-      },
-      {
-        keyword: "no money down bankruptcy jackson tn",
-        position: 1,
-        monthlyVolume: 320,
-        cpcEquivalent: 62.0,
-        landingPage: "/practice/no-money-down-bankruptcy-jackson-tn",
-        aiCited: true,
-      },
-      {
-        keyword: "chapter 7 vs chapter 13 tennessee exemptions",
-        position: 1,
-        monthlyVolume: 590,
-        cpcEquivalent: 51.0,
-        landingPage: "/resources/tennessee-bankruptcy-exemptions-means-test",
-        aiCited: true,
-      },
-      {
-        keyword: "stop wage garnishment attorney west tennessee",
-        position: 2,
-        monthlyVolume: 190,
-        cpcEquivalent: 69.0,
-        landingPage: "/practice/stop-wage-garnishment-jackson-tn",
-        aiCited: true,
-      },
-      {
-        keyword: "bankruptcy lawyer gibson county tn",
-        position: 1,
-        monthlyVolume: 140,
-        cpcEquivalent: 48.0,
-        landingPage: "/locations/gibson-county-tn",
-        aiCited: true,
-      },
-    ],
-    countyDistribution: [
-      { county: "Madison County (Jackson)", leads: 24, percentage: 46 },
-      { county: "Gibson County (Milan/Humboldt)", leads: 10, percentage: 19 },
-      { county: "Haywood County (Brownsville)", leads: 6, percentage: 12 },
-      { county: "Henderson County (Lexington)", leads: 5, percentage: 10 },
-      { county: "Chester County (Henderson)", leads: 4, percentage: 8 },
-      { county: "Crockett County (Alamo)", leads: 3, percentage: 5 },
-    ],
+    topKeywords: DEFAULT_KEYWORDS,
+    countyDistribution: COUNTY_BUCKETS.map((county) => ({
+      county,
+      leads: 0,
+      percentage: 0,
+    })),
+    recentTrafficEvents: [],
   },
 };
+
+export function computeLiveAnalytics(
+  events: TrafficEventRecord[],
+  leads: LeadRecord[]
+): AnalyticsSummary {
+  const organicCount = events.filter(
+    (e) => e.trafficChannel === "GOOGLE_ORGANIC" || e.trafficChannel === "OTHER_ORGANIC"
+  ).length;
+  const googleAdsCount = events.filter((e) => e.trafficChannel === "GOOGLE_ADS").length;
+  const aiCount = events.filter((e) => e.trafficChannel === "AI_SEARCH").length;
+  const socialCount = events.filter((e) => e.trafficChannel === "SOCIAL_REFERRAL").length;
+  const directCount = events.filter((e) => e.trafficChannel === "DIRECT").length;
+  const totalVisitors = events.length;
+
+  const avgCpc = 64.5;
+  const equivalentSavings = Math.round((organicCount + aiCount) * avgCpc);
+
+  const totalLeads = leads.length;
+  const countyDistribution = COUNTY_BUCKETS.map((bucket) => {
+    const prefix = bucket.split(" ")[0].toLowerCase();
+    const count = leads.filter((l) => (l.county || "").toLowerCase().includes(prefix)).length;
+    const percentage = totalLeads > 0 ? Math.round((count / totalLeads) * 100) : 0;
+    return {
+      county: bucket,
+      leads: count,
+      percentage,
+    };
+  });
+
+  return {
+    totalVisitors30d: totalVisitors,
+    organicSearchVisitors30d: organicCount,
+    googleAdsVisitors30d: googleAdsCount,
+    aiSearchReferrals30d: aiCount,
+    socialReferralVisitors30d: socialCount,
+    directVisitors30d: directCount,
+    equivalentGoogleAdsSavingsMonthly: equivalentSavings,
+    averageCpcBankruptcyJacksonTN: avgCpc,
+    topKeywords: DEFAULT_KEYWORDS,
+    countyDistribution,
+    recentTrafficEvents: events.slice(0, 100),
+  };
+}
 
 export function getLocalDb(): DatabaseSchema {
   try {
@@ -398,7 +284,14 @@ export function getLocalDb(): DatabaseSchema {
       return INITIAL_DB;
     }
     const raw = fs.readFileSync(DB_FILE, "utf-8");
-    return JSON.parse(raw) as DatabaseSchema;
+    const parsed = JSON.parse(raw) as DatabaseSchema;
+    const events = parsed.analytics?.recentTrafficEvents || [];
+    const leads = parsed.leads || [];
+    return {
+      leads,
+      intakes: parsed.intakes || [],
+      analytics: computeLiveAnalytics(events, leads),
+    };
   } catch {
     return INITIAL_DB;
   }
@@ -443,6 +336,16 @@ function rowToLead(r: Record<string, unknown>): LeadRecord {
     notes: String(r.notes || payload.notes || ""),
     status: (r.status || payload.status || "NEW") as LeadStatus,
     estimatedCaseValue: Number(r.estimated_case_value ?? payload.estimatedCaseValue ?? 1850),
+    trafficChannel: payload.trafficChannel,
+    trafficSourceLabel: payload.trafficSourceLabel,
+    referrerUrl: payload.referrerUrl,
+    landingPage: payload.landingPage,
+    utmSource: payload.utmSource,
+    utmMedium: payload.utmMedium,
+    utmCampaign: payload.utmCampaign,
+    utmTerm: payload.utmTerm,
+    clickId: payload.clickId,
+    deviceType: payload.deviceType,
   };
 }
 
@@ -465,51 +368,28 @@ export async function getDbAsync(): Promise<DatabaseSchema> {
     }
 
     const remoteLeads = (leadsRes.data || []).map((r) => rowToLead(r as Record<string, unknown>));
-    const remoteIntakes = (intakesRes.data || []).map((r) => {
-      const rec = r as Record<string, unknown>;
-      return (rec.payload as IntakeRecord) || (rec as unknown as IntakeRecord);
-    });
 
-    // If Supabase tables are freshly created and empty, seed them with initial records
-    if (remoteLeads.length === 0 && localDb.leads.length > 0) {
-      await Promise.all(
-        localDb.leads.map((l) =>
-          supabase.from("leads").upsert({
-            id: l.id,
-            created_at: l.createdAt,
-            first_name: l.firstName,
-            last_name: l.lastName || "",
-            phone: l.phone,
-            email: l.email || "",
-            county: l.county,
-            primary_concern: l.primaryConcern,
-            estimated_debt: l.estimatedDebt,
-            owns_home: l.ownsHome,
-            behind_on_payments: l.behindOnPayments,
-            urgency: l.urgency,
-            recommended_chapter: l.recommendedChapter,
-            source_page: l.sourcePage,
-            capture_method: l.captureMethod,
-            preferred_date: l.preferredDate || "",
-            preferred_time: l.preferredTime || "",
-            notes: l.notes || "",
-            status: l.status,
-            estimated_case_value: l.estimatedCaseValue,
-            payload: l,
-          })
-        )
-      );
-      return {
-        ...localDb,
-        storageEngine: "supabase",
-        supabaseUrl: SUPABASE_URL,
-      };
+    let remoteTrafficEvents: TrafficEventRecord[] = localDb.analytics.recentTrafficEvents || [];
+    const remoteIntakes: IntakeRecord[] = [];
+
+    for (const r of intakesRes.data || []) {
+      const rec = r as Record<string, unknown>;
+      if (rec.id === TELEMETRY_ROW_ID) {
+        const telemetryPayload = rec.payload as { events?: TrafficEventRecord[] } | undefined;
+        if (telemetryPayload && Array.isArray(telemetryPayload.events)) {
+          remoteTrafficEvents = telemetryPayload.events;
+        }
+      } else {
+        remoteIntakes.push((rec.payload as IntakeRecord) || (rec as unknown as IntakeRecord));
+      }
     }
 
+    const liveAnalytics = computeLiveAnalytics(remoteTrafficEvents, remoteLeads);
+
     return {
-      leads: remoteLeads.length > 0 ? remoteLeads : localDb.leads,
-      intakes: remoteIntakes.length > 0 ? remoteIntakes : localDb.intakes,
-      analytics: localDb.analytics,
+      leads: remoteLeads,
+      intakes: remoteIntakes,
+      analytics: liveAnalytics,
       storageEngine: "supabase",
       supabaseUrl: SUPABASE_URL,
     };
@@ -518,8 +398,60 @@ export async function getDbAsync(): Promise<DatabaseSchema> {
   }
 }
 
+export async function recordTrafficVisitAsync(
+  eventInput: Omit<TrafficEventRecord, "id" | "timestamp">
+): Promise<AnalyticsSummary> {
+  const db = getLocalDb();
+  const newEvent: TrafficEventRecord = {
+    ...eventInput,
+    id: `TV-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    timestamp: new Date().toISOString(),
+  };
+
+  const existingEvents = db.analytics?.recentTrafficEvents || [];
+  const updatedEvents = [newEvent, ...existingEvents].slice(0, 250);
+  db.analytics = computeLiveAnalytics(updatedEvents, db.leads);
+  saveLocalDb(db);
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      const existingTelemetry = await supabase
+        .from("intakes")
+        .select("payload")
+        .eq("id", TELEMETRY_ROW_ID)
+        .maybeSingle();
+
+      const prevEvents: TrafficEventRecord[] =
+        (existingTelemetry.data?.payload as { events?: TrafficEventRecord[] })?.events || [];
+      const mergedEvents = [newEvent, ...prevEvents].slice(0, 250);
+
+      await supabase.from("intakes").upsert({
+        id: TELEMETRY_ROW_ID,
+        created_at: new Date().toISOString(),
+        lead_id: "",
+        full_name: "SYSTEM_ANALYTICS_TELEMETRY",
+        phone: "0000000000",
+        email: "",
+        debtor_signature: "SYSTEM",
+        signature_date: new Date().toISOString().slice(0, 10),
+        payload: { events: mergedEvents },
+      });
+
+      return computeLiveAnalytics(mergedEvents, db.leads);
+    } catch (e) {
+      console.error("Supabase telemetry sync fallback:", e);
+    }
+  }
+
+  return db.analytics;
+}
+
 export async function addLeadAsync(
-  input: Omit<LeadRecord, "id" | "createdAt" | "urgency" | "recommendedChapter" | "status" | "estimatedCaseValue">
+  input: Omit<
+    LeadRecord,
+    "id" | "createdAt" | "urgency" | "recommendedChapter" | "status" | "estimatedCaseValue"
+  >
 ): Promise<LeadRecord> {
   const db = getLocalDb();
   const concernLower = input.primaryConcern.toLowerCase();
@@ -554,7 +486,7 @@ export async function addLeadAsync(
 
   const newLead: LeadRecord = {
     ...input,
-    id: `LD-2026-${1092 + db.leads.length + Math.floor(Math.random() * 90)}`,
+    id: `LD-2026-${1001 + db.leads.length + Math.floor(Math.random() * 900)}`,
     createdAt: new Date().toISOString(),
     urgency,
     recommendedChapter,
@@ -563,6 +495,7 @@ export async function addLeadAsync(
   };
 
   db.leads.unshift(newLead);
+  db.analytics = computeLiveAnalytics(db.analytics.recentTrafficEvents || [], db.leads);
   saveLocalDb(db);
 
   const supabase = getSupabaseClient();
@@ -627,13 +560,54 @@ export async function updateLeadStatusAsync(
   return lead || null;
 }
 
+export async function deleteLeadAsync(id: string): Promise<boolean> {
+  const db = getLocalDb();
+  db.leads = db.leads.filter((l) => l.id !== id);
+  db.analytics = computeLiveAnalytics(db.analytics.recentTrafficEvents || [], db.leads);
+  saveLocalDb(db);
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      await supabase.from("leads").delete().eq("id", id);
+    } catch (e) {
+      console.error("Supabase lead delete fallback:", e);
+    }
+  }
+  return true;
+}
+
+export async function resetAllDataAsync(): Promise<void> {
+  saveLocalDb(INITIAL_DB);
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    try {
+      await supabase.from("leads").delete().neq("id", "__NONE__");
+      await supabase.from("intakes").delete().neq("id", "__NONE__");
+    } catch (e) {
+      console.error("Supabase reset error:", e);
+    }
+  }
+}
+
 export async function addIntakeAsync(
-  input: Omit<IntakeRecord, "id" | "createdAt">
+  input: Omit<IntakeRecord, "id" | "createdAt"> & {
+    trafficChannel?: TrafficChannel;
+    trafficSourceLabel?: string;
+    referrerUrl?: string;
+    landingPage?: string;
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    utmTerm?: string;
+    clickId?: string;
+    deviceType?: "Mobile" | "Tablet" | "Desktop";
+  }
 ): Promise<IntakeRecord> {
   const db = getLocalDb();
   const newIntake: IntakeRecord = {
     ...input,
-    id: `INT-2026-${402 + db.intakes.length + Math.floor(Math.random() * 50)}`,
+    id: `INT-2026-${401 + db.intakes.length + Math.floor(Math.random() * 500)}`,
     createdAt: new Date().toISOString(),
   };
   db.intakes.unshift(newIntake);
@@ -657,6 +631,16 @@ export async function addIntakeAsync(
     sourcePage: "/intake",
     captureMethod: "Intake Questionnaire",
     notes: `Full Court Intake Packet #${newIntake.id} completed and signed by ${input.debtorSignature}.`,
+    trafficChannel: input.trafficChannel,
+    trafficSourceLabel: input.trafficSourceLabel,
+    referrerUrl: input.referrerUrl,
+    landingPage: input.landingPage,
+    utmSource: input.utmSource,
+    utmMedium: input.utmMedium,
+    utmCampaign: input.utmCampaign,
+    utmTerm: input.utmTerm,
+    clickId: input.clickId,
+    deviceType: input.deviceType,
   });
   newIntake.leadId = createdLead.id;
   saveLocalDb(db);

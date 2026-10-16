@@ -99,10 +99,15 @@ export default function ClientIntakePortalPage() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const { captureOrGetAttribution } = await import("@/lib/attribution");
+      const attribution = captureOrGetAttribution();
       const res = await fetch("/api/intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...(attribution || {}),
+          ...form,
+        }),
       });
       const data = await res.json();
       if (data.intake) {

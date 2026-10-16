@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addLeadAsync, getDbAsync, updateLeadStatusAsync, LeadStatus } from "@/lib/db";
+import {
+  addLeadAsync,
+  deleteLeadAsync,
+  getDbAsync,
+  resetAllDataAsync,
+  updateLeadStatusAsync,
+  LeadStatus,
+} from "@/lib/db";
 
 export async function GET() {
   const db = await getDbAsync();
@@ -30,6 +37,16 @@ export async function POST(req: NextRequest) {
       preferredDate: body.preferredDate || "",
       preferredTime: body.preferredTime || "",
       notes: body.notes || "",
+      trafficChannel: body.trafficChannel || "DIRECT",
+      trafficSourceLabel: body.trafficSourceLabel || "Direct Visit",
+      referrerUrl: body.referrerUrl || "",
+      landingPage: body.landingPage || body.sourcePage || "/",
+      utmSource: body.utmSource || "",
+      utmMedium: body.utmMedium || "",
+      utmCampaign: body.utmCampaign || "",
+      utmTerm: body.utmTerm || "",
+      clickId: body.clickId || "",
+      deviceType: body.deviceType || "Desktop",
     });
     return NextResponse.json({ success: true, lead: created });
   } catch (err) {
@@ -49,5 +66,22 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ success: true, lead: updated });
   } catch {
     return NextResponse.json({ success: false, error: "Failed to update lead" }, { status: 400 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const body = await req.json();
+    if (body.resetAll) {
+      await resetAllDataAsync();
+      return NextResponse.json({ success: true, reset: true });
+    }
+    if (body.id) {
+      await deleteLeadAsync(String(body.id));
+      return NextResponse.json({ success: true, deletedId: body.id });
+    }
+    return NextResponse.json({ success: false, error: "Missing id or resetAll" }, { status: 400 });
+  } catch {
+    return NextResponse.json({ success: false, error: "Failed to delete" }, { status: 400 });
   }
 }

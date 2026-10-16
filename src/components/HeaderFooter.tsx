@@ -36,10 +36,13 @@ export function Header() {
     if (!emergencyForm.firstName || !emergencyForm.phone) return;
     setSubmitting(true);
     try {
+      const { captureOrGetAttribution } = await import("@/lib/attribution");
+      const attribution = captureOrGetAttribution();
       await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(attribution || {}),
           firstName: emergencyForm.firstName,
           phone: emergencyForm.phone,
           email: "",

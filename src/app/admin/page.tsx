@@ -20,10 +20,15 @@ import {
   Lock,
   KeyRound,
   LogOut,
-  ShieldCheck,
   Delete,
+  Trash2,
+  Globe,
+  Megaphone,
+  Smartphone,
+  Monitor,
 } from "lucide-react";
 import { LeadRecord, IntakeRecord, AnalyticsSummary, LeadStatus } from "@/lib/db";
+import { TrafficChannel } from "@/lib/attribution";
 
 const DEFAULT_PIN = "731501"; // Jackson area code (731) + office line ending (501)
 
@@ -51,6 +56,36 @@ const STATUS_LABELS: Record<LeadStatus, { label: string; color: string }> = {
   ARCHIVED: {
     label: "Archived",
     color: "bg-slate-800 text-slate-400 border-slate-700",
+  },
+};
+
+const CHANNEL_BADGES: Record<
+  TrafficChannel,
+  { label: string; className: string }
+> = {
+  GOOGLE_ADS: {
+    label: "Google Ads (PPC)",
+    className: "bg-amber-500/20 text-amber-300 border-amber-500/40",
+  },
+  AI_SEARCH: {
+    label: "AI Search (GEO)",
+    className: "bg-purple-500/20 text-purple-300 border-purple-500/40",
+  },
+  GOOGLE_ORGANIC: {
+    label: "Google Organic",
+    className: "bg-emerald-500/20 text-emerald-300 border-emerald-500/40",
+  },
+  OTHER_ORGANIC: {
+    label: "Organic Search",
+    className: "bg-teal-500/20 text-teal-300 border-teal-500/40",
+  },
+  SOCIAL_REFERRAL: {
+    label: "Social / Directory",
+    className: "bg-sky-500/20 text-sky-300 border-sky-500/40",
+  },
+  DIRECT: {
+    label: "Direct Visit",
+    className: "bg-slate-700/60 text-slate-300 border-slate-600",
   },
 };
 
@@ -128,8 +163,10 @@ export default function AdminDashboardPage() {
       setAnalytics(data.analytics || null);
       if (data.storageEngine) setStorageEngine(data.storageEngine);
       if (data.supabaseUrl) setSupabaseUrl(data.supabaseUrl);
-      if (data.intakes?.length && !selectedIntake) {
+      if (data.intakes?.length) {
         setSelectedIntake(data.intakes[0]);
+      } else {
+        setSelectedIntake(null);
       }
     } finally {
       setLoading(false);
@@ -150,6 +187,28 @@ export default function AdminDashboardPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, status }),
     });
+  }
+
+  async function deleteLead(id: string) {
+    setLeads((prev) => prev.filter((l) => l.id !== id));
+    await fetch("/api/leads", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    loadDashboardData();
+  }
+
+  async function resetAllDashboardData() {
+    if (!window.confirm("Reset all leads, court intakes, and traffic counters back to 0?")) {
+      return;
+    }
+    await fetch("/api/leads", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resetAll: true }),
+    });
+    await loadDashboardData();
   }
 
   // ---------------------------------------------------------------------------
@@ -174,7 +233,7 @@ export default function AdminDashboardPage() {
               Enter 6-Digit Attorney PIN
             </h1>
             <p className="text-xs text-slate-400">
-              Protected Lead Triage CRM, Court Intake Packets &amp; Practice Valuation
+              Protected Lead Triage CRM, Live Traffic Attribution &amp; Practice Valuation
             </p>
           </div>
 
@@ -201,7 +260,8 @@ export default function AdminDashboardPage() {
 
           {pinError && (
             <p className="text-xs text-center text-red-400 font-semibold mb-4">
-              Invalid 6-digit PIN. Please try again (Default PIN: <span className="font-mono text-white">731501</span>).
+              Invalid 6-digit PIN. Please try again (Default PIN:{" "}
+              <span className="font-mono text-white">731501</span>).
             </p>
           )}
 
@@ -302,11 +362,21 @@ export default function AdminDashboardPage() {
         (l.lastName || "").toLowerCase().includes(q) ||
         l.county.toLowerCase().includes(q) ||
         l.primaryConcern.toLowerCase().includes(q) ||
+        (l.trafficSourceLabel || "").toLowerCase().includes(q) ||
         l.phone.includes(q)
       );
     }
     return true;
   });
+
+  const totalVisitors = analytics?.totalVisitors30d ?? 0;
+  const organicVisitors = analytics?.organicSearchVisitors30d ?? 0;
+  const googleAdsVisitors = analytics?.googleAdsVisitors30d ?? 0;
+  const aiVisitors = analytics?.aiSearchReferrals30d ?? 0;
+  const socialVisitors = analytics?.socialReferralVisitors30d ?? 0;
+  const directVisitors = analytics?.directVisitors30d ?? 0;
+  const ppcSavings = analytics?.equivalentGoogleAdsSavingsMonthly ?? 0;
+  const recentEvents = analytics?.recentTrafficEvents || [];
 
   return (
     <div className="min-h-screen bg-[#060B14] text-slate-100 py-8 px-4 sm:px-6 lg:px-8">
@@ -327,15 +397,16 @@ export default function AdminDashboardPage() {
                 title={supabaseUrl}
               >
                 {storageEngine === "supabase"
-                  ? "● Supabase Connected (kufyxqggfzotrbckyzld)"
-                  : "● Supabase Ready (Add NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local)"}
+                  ? "● Live Supabase Connected (kufyxqggfzotrbckyzld)"
+                  : "● Local Storage Fallback"}
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
-              Lead Capture CRM, Court Intake Portal &amp; SEO/GEO Analytics
+              Live Lead CRM, Court Intakes &amp; Multi-Channel Traffic Attribution
             </h1>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Real-time bankruptcy pipeline for <strong className="text-slate-200">The Law Offices of Louis W. Ringger</strong> (Jackson, TN — Western District of Tennessee)
+              Real-time bankruptcy pipeline &amp; visitor telemetry for{" "}
+              <strong className="text-slate-200">The Law Offices of Louis W. Ringger</strong> (Jackson, TN)
             </p>
           </div>
 
@@ -344,13 +415,20 @@ export default function AdminDashboardPage() {
               onClick={loadDashboardData}
               className="bg-white/5 hover:bg-white/10 text-slate-200 text-xs font-bold px-4 py-2.5 rounded-xl border border-white/15 flex items-center gap-2 cursor-pointer transition"
             >
-              <RefreshCw className={`w-4 h-4 text-[#A8E028] ${loading ? "animate-spin" : ""}`} /> Refresh Data
+              <RefreshCw className={`w-4 h-4 text-[#A8E028] ${loading ? "animate-spin" : ""}`} /> Refresh Live Data
+            </button>
+            <button
+              onClick={resetAllDashboardData}
+              className="bg-white/5 hover:bg-red-950/60 text-slate-300 hover:text-red-300 text-xs font-bold px-3.5 py-2.5 rounded-xl border border-white/15 flex items-center gap-1.5 cursor-pointer transition"
+              title="Reset all leads, intakes, and visitor counters to 0"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Zero Reset
             </button>
             <button
               onClick={() => window.print()}
               className="bg-[#A8E028] hover:bg-[#b8f038] text-black text-xs font-extrabold px-4 py-2.5 rounded-xl shadow-lg shadow-[#A8E028]/15 flex items-center gap-2 cursor-pointer transition"
             >
-              <Printer className="w-4 h-4" /> Print Buyer Valuation Report
+              <Printer className="w-4 h-4" /> Print Report
             </button>
             <button
               onClick={handleLogout}
@@ -362,11 +440,11 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* 4 Key KPI Cards (Dark Glassmorphism) */}
+        {/* 4 Key KPI Cards (Live Zero-Baseline Telemetry) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-[#0D1627] rounded-2xl p-5 border border-white/10 shadow-xl">
             <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-400 mb-2">
-              <span>Active Bankruptcy Leads</span>
+              <span>Live Bankruptcy Leads</span>
               <Users className="w-4 h-4 text-[#A8E028]" />
             </div>
             <div className="text-3xl font-serif font-bold text-white">{leads.length}</div>
@@ -384,33 +462,36 @@ export default function AdminDashboardPage() {
               ${totalPipelineValue.toLocaleString()}
             </div>
             <div className="text-xs text-slate-400 mt-1.5">
-              <strong className="text-emerald-400">${retainedValue.toLocaleString()}</strong> Retained • {chapter13Count} Ch. 13 Cases
+              <strong className="text-emerald-400">${retainedValue.toLocaleString()}</strong> Retained •{" "}
+              {chapter13Count} Ch. 13 Cases
             </div>
           </div>
 
           <div className="bg-[#0D1627] rounded-2xl p-5 border border-white/10 shadow-xl">
             <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-400 mb-2">
-              <span>Google Ads Spend Saved / Mo</span>
+              <span>Live Visitor Sessions</span>
+              <Globe className="w-4 h-4 text-sky-400" />
+            </div>
+            <div className="text-3xl font-serif font-bold text-white">
+              {totalVisitors.toLocaleString()}
+            </div>
+            <div className="text-xs text-slate-400 mt-1.5">
+              Organic: <strong className="text-emerald-400">{organicVisitors}</strong> • Ads:{" "}
+              <strong className="text-amber-300">{googleAdsVisitors}</strong> • AI:{" "}
+              <strong className="text-purple-300">{aiVisitors}</strong>
+            </div>
+          </div>
+
+          <div className="bg-[#0D1627] rounded-2xl p-5 border border-white/10 shadow-xl">
+            <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-400 mb-2">
+              <span>Organic &amp; AI PPC Value Earned</span>
               <TrendingUp className="w-4 h-4 text-[#A8E028]" />
             </div>
             <div className="text-3xl font-serif font-bold text-[#A8E028]">
-              ${(analytics?.equivalentGoogleAdsSavingsMonthly || 14850).toLocaleString()}/mo
+              ${ppcSavings.toLocaleString()}
             </div>
             <div className="text-xs text-slate-400 mt-1.5">
-              Avg Jackson TN Bankruptcy CPC: <strong className="text-white">${analytics?.averageCpcBankruptcyJacksonTN || 64.5}</strong>
-            </div>
-          </div>
-
-          <div className="bg-[#0D1627] rounded-2xl p-5 border border-white/10 shadow-xl">
-            <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-400 mb-2">
-              <span>30-Day Organic &amp; AI Traffic</span>
-              <Sparkles className="w-4 h-4 text-purple-400" />
-            </div>
-            <div className="text-3xl font-serif font-bold text-white">
-              {(analytics?.totalVisitors30d || 3480).toLocaleString()}
-            </div>
-            <div className="text-xs text-purple-300 font-semibold mt-1.5">
-              {analytics?.aiSearchReferrals30d || 685} Visits from ChatGPT / Google AI Overviews
+              Based on <strong className="text-white">${analytics?.averageCpcBankruptcyJacksonTN || 64.5}/click</strong> Jackson TN CPC
             </div>
           </div>
         </div>
@@ -420,7 +501,11 @@ export default function AdminDashboardPage() {
           {[
             { id: "pipeline", label: `1. Lead Triage & CRM (${leads.length})`, icon: Users },
             { id: "intakes", label: `2. Signed Court Intake Packets (${intakes.length})`, icon: FileText },
-            { id: "seo", label: "3. SEO & Generative AI (GEO) Rankings", icon: BarChart3 },
+            {
+              id: "seo",
+              label: `3. Live Traffic: Google Search, Ads, AI & Organic (${totalVisitors})`,
+              icon: BarChart3,
+            },
             { id: "valuation", label: "4. Practice Acquisition & Retirement Asset Brief", icon: Briefcase },
           ].map((t) => {
             const Icon = t.icon;
@@ -473,117 +558,166 @@ export default function AdminDashboardPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search name, county, phone..."
+                  placeholder="Search name, county, channel..."
                   className="w-full pl-9 pr-3 py-2 rounded-xl bg-[#070D19] border border-white/15 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-[#A8E028]"
                 />
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-[#080E1A] border-b border-white/10 text-slate-400 uppercase tracking-wider">
-                    <th className="py-3.5 px-4 font-bold">Client &amp; Contact</th>
-                    <th className="py-3.5 px-4 font-bold">Urgency &amp; Goal</th>
-                    <th className="py-3.5 px-4 font-bold">Auto-Qualified Chapter</th>
-                    <th className="py-3.5 px-4 font-bold">West TN County &amp; Source</th>
-                    <th className="py-3.5 px-4 font-bold">Pipeline Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/10">
-                  {filteredLeads.map((lead) => (
-                    <tr key={lead.id} className="hover:bg-white/[0.03] align-top transition">
-                      <td className="py-4 px-4">
-                        <div className="font-bold text-sm text-white">
-                          {lead.firstName} {lead.lastName}
-                        </div>
-                        <div className="text-slate-500 text-[11px] font-mono">{lead.id}</div>
-                        <div className="mt-1.5 space-y-0.5">
-                          <a
-                            href={`tel:${lead.phone}`}
-                            className="flex items-center gap-1 text-[#A8E028] font-bold hover:underline"
-                          >
-                            <Phone className="w-3 h-3" /> {lead.phone}
-                          </a>
-                          {lead.email && (
-                            <div className="flex items-center gap-1 text-slate-400">
-                              <Mail className="w-3 h-3" /> {lead.email}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-4 max-w-xs">
-                        {lead.urgency === "EMERGENCY_FORECLOSURE_REPO" && (
-                          <span className="inline-flex items-center gap-1 bg-red-500/20 text-red-300 border border-red-500/40 font-bold px-2 py-0.5 rounded text-[11px] mb-1">
-                            <AlertTriangle className="w-3 h-3" /> EMERGENCY: FORECLOSURE / REPO
-                          </span>
-                        )}
-                        {lead.urgency === "WAGE_GARNISHMENT" && (
-                          <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold px-2 py-0.5 rounded text-[11px] mb-1">
-                            ⚡ URGENT: 25% WAGE GARNISHMENT
-                          </span>
-                        )}
-                        {lead.urgency === "STANDARD_DEBT_RELIEF" && (
-                          <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold px-2 py-0.5 rounded text-[11px] mb-1">
-                            ✓ Unsecured Debt Elimination
-                          </span>
-                        )}
-                        <div className="font-bold text-white mt-0.5">{lead.primaryConcern}</div>
-                        {lead.notes && (
-                          <p className="text-slate-400 text-[11px] mt-1 leading-relaxed">
-                            {lead.notes}
-                          </p>
-                        )}
-                      </td>
-
-                      <td className="py-4 px-4">
-                        <div className="font-bold text-white">{lead.recommendedChapter}</div>
-                        <div className="text-slate-400 mt-1">
-                          Est. Unsecured Debt: <strong className="text-slate-200">${lead.estimatedDebt.toLocaleString()}</strong>
-                        </div>
-                        <div className="text-[#A8E028] font-bold mt-0.5">
-                          Est. Case Fee: ${lead.estimatedCaseValue.toLocaleString()}
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-4">
-                        <div className="font-semibold text-slate-200 flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-[#A8E028]" /> {lead.county}
-                        </div>
-                        <div className="text-[11px] text-slate-400 mt-1">
-                          Tool: <strong className="text-slate-200">{lead.captureMethod}</strong>
-                        </div>
-                        <div className="text-[11px] font-mono text-slate-500">
-                          Page: {lead.sourcePage}
-                        </div>
-                      </td>
-
-                      <td className="py-4 px-4">
-                        <select
-                          value={lead.status}
-                          onChange={(e) => updateLeadStatus(lead.id, e.target.value as LeadStatus)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer bg-[#070D19] ${
-                            STATUS_LABELS[lead.status]?.color || "text-slate-200"
-                          }`}
-                        >
-                          {Object.entries(STATUS_LABELS).map(([k, v]) => (
-                            <option key={k} value={k} className="bg-[#0D1627] text-white">
-                              {v.label}
-                            </option>
-                          ))}
-                        </select>
-                        {lead.preferredDate && (
-                          <div className="text-[11px] text-purple-300 font-semibold mt-1.5">
-                            📅 Requested: {lead.preferredDate} {lead.preferredTime}
-                          </div>
-                        )}
-                      </td>
+            {filteredLeads.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-[#A8E028]">
+                  <Users className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-bold text-white">
+                  0 Leads in Pipeline — Ready for Live Traffic
+                </h3>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  All demo/seeded leads have been cleared. New inquiries submitted through the Fast Consultation Card, 60-Second Quiz, AI Concierge, Emergency Bar, or Court Intake Portal will appear here automatically with full traffic attribution.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#080E1A] border-b border-white/10 text-slate-400 uppercase tracking-wider">
+                      <th className="py-3.5 px-4 font-bold">Client &amp; Contact</th>
+                      <th className="py-3.5 px-4 font-bold">Urgency &amp; Goal</th>
+                      <th className="py-3.5 px-4 font-bold">Auto-Qualified Chapter</th>
+                      <th className="py-3.5 px-4 font-bold">Traffic Source &amp; County</th>
+                      <th className="py-3.5 px-4 font-bold">Pipeline Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-white/10">
+                    {filteredLeads.map((lead) => {
+                      const channelKey: TrafficChannel = lead.trafficChannel || "DIRECT";
+                      const badge = CHANNEL_BADGES[channelKey] || CHANNEL_BADGES.DIRECT;
+                      return (
+                        <tr key={lead.id} className="hover:bg-white/[0.03] align-top transition">
+                          <td className="py-4 px-4">
+                            <div className="font-bold text-sm text-white">
+                              {lead.firstName} {lead.lastName}
+                            </div>
+                            <div className="text-slate-500 text-[11px] font-mono">
+                              {lead.id} • {new Date(lead.createdAt).toLocaleString()}
+                            </div>
+                            <div className="mt-1.5 space-y-0.5">
+                              <a
+                                href={`tel:${lead.phone}`}
+                                className="flex items-center gap-1 text-[#A8E028] font-bold hover:underline"
+                              >
+                                <Phone className="w-3 h-3" /> {lead.phone}
+                              </a>
+                              {lead.email && (
+                                <div className="flex items-center gap-1 text-slate-400">
+                                  <Mail className="w-3 h-3" /> {lead.email}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+
+                          <td className="py-4 px-4 max-w-xs">
+                            {lead.urgency === "EMERGENCY_FORECLOSURE_REPO" && (
+                              <span className="inline-flex items-center gap-1 bg-red-500/20 text-red-300 border border-red-500/40 font-bold px-2 py-0.5 rounded text-[11px] mb-1">
+                                <AlertTriangle className="w-3 h-3" /> EMERGENCY: FORECLOSURE / REPO
+                              </span>
+                            )}
+                            {lead.urgency === "WAGE_GARNISHMENT" && (
+                              <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold px-2 py-0.5 rounded text-[11px] mb-1">
+                                ⚡ URGENT: 25% WAGE GARNISHMENT
+                              </span>
+                            )}
+                            {lead.urgency === "STANDARD_DEBT_RELIEF" && (
+                              <span className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold px-2 py-0.5 rounded text-[11px] mb-1">
+                                ✓ Unsecured Debt Elimination
+                              </span>
+                            )}
+                            <div className="font-bold text-white mt-0.5">{lead.primaryConcern}</div>
+                            {lead.notes && (
+                              <p className="text-slate-400 text-[11px] mt-1 leading-relaxed">
+                                {lead.notes}
+                              </p>
+                            )}
+                          </td>
+
+                          <td className="py-4 px-4">
+                            <div className="font-bold text-white">{lead.recommendedChapter}</div>
+                            <div className="text-slate-400 mt-1">
+                              Est. Unsecured Debt:{" "}
+                              <strong className="text-slate-200">
+                                ${lead.estimatedDebt.toLocaleString()}
+                              </strong>
+                            </div>
+                            <div className="text-[#A8E028] font-bold mt-0.5">
+                              Est. Case Fee: ${lead.estimatedCaseValue.toLocaleString()}
+                            </div>
+                          </td>
+
+                          <td className="py-4 px-4 space-y-1">
+                            <div>
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[10px] font-bold uppercase ${badge.className}`}
+                              >
+                                {lead.trafficSourceLabel || badge.label}
+                              </span>
+                            </div>
+                            <div className="font-semibold text-slate-200 flex items-center gap-1">
+                              <MapPin className="w-3.5 h-3.5 text-[#A8E028]" /> {lead.county}
+                            </div>
+                            <div className="text-[11px] text-slate-400">
+                              Tool: <strong className="text-slate-200">{lead.captureMethod}</strong>
+                              {lead.deviceType ? ` • ${lead.deviceType}` : ""}
+                            </div>
+                            <div className="text-[11px] font-mono text-slate-500">
+                              Landing: {lead.landingPage || lead.sourcePage}
+                            </div>
+                            {(lead.utmCampaign || lead.utmTerm || lead.clickId) && (
+                              <div className="text-[10px] text-amber-300 font-mono">
+                                {lead.utmCampaign ? `Campaign: ${lead.utmCampaign} ` : ""}
+                                {lead.utmTerm ? `• KW: ${lead.utmTerm} ` : ""}
+                                {lead.clickId ? `• ClickID: ${lead.clickId.slice(0, 12)}...` : ""}
+                              </div>
+                            )}
+                          </td>
+
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-2">
+                              <select
+                                value={lead.status}
+                                onChange={(e) =>
+                                  updateLeadStatus(lead.id, e.target.value as LeadStatus)
+                                }
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold border cursor-pointer bg-[#070D19] ${
+                                  STATUS_LABELS[lead.status]?.color || "text-slate-200"
+                                }`}
+                              >
+                                {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                                  <option key={k} value={k} className="bg-[#0D1627] text-white">
+                                    {v.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                onClick={() => deleteLead(lead.id)}
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition cursor-pointer"
+                                title="Delete Lead"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                            {lead.preferredDate && (
+                              <div className="text-[11px] text-purple-300 font-semibold mt-1.5">
+                                📅 Requested: {lead.preferredDate} {lead.preferredTime}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 
@@ -595,28 +729,34 @@ export default function AdminDashboardPage() {
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#A8E028] mb-3">
                   Submitted Intake Questionnaires ({intakes.length})
                 </h3>
-                <div className="space-y-2">
-                  {intakes.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setSelectedIntake(item)}
-                      className={`w-full text-left p-3.5 rounded-xl border transition cursor-pointer ${
-                        selectedIntake?.id === item.id
-                          ? "border-[#A8E028] bg-[#A8E028]/15 text-white"
-                          : "border-white/10 bg-[#070D19] hover:bg-white/5 text-slate-300"
-                      }`}
-                    >
-                      <div className="text-xs font-bold">{item.fullName}</div>
-                      <div
-                        className={`text-[11px] ${
-                          selectedIntake?.id === item.id ? "text-[#A8E028]" : "text-slate-500"
+                {intakes.length === 0 ? (
+                  <p className="text-xs text-slate-400 py-4">
+                    0 signed court intake packets yet. When a client completes `/intake`, their signed 5-step packet will appear here.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {intakes.map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => setSelectedIntake(item)}
+                        className={`w-full text-left p-3.5 rounded-xl border transition cursor-pointer ${
+                          selectedIntake?.id === item.id
+                            ? "border-[#A8E028] bg-[#A8E028]/15 text-white"
+                            : "border-white/10 bg-[#070D19] hover:bg-white/5 text-slate-300"
                         }`}
                       >
-                        Packet #{item.id} • Signed {item.signatureDate}
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                        <div className="text-xs font-bold">{item.fullName}</div>
+                        <div
+                          className={`text-[11px] ${
+                            selectedIntake?.id === item.id ? "text-[#A8E028]" : "text-slate-500"
+                          }`}
+                        >
+                          Packet #{item.id} • Signed {item.signatureDate}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -688,93 +828,249 @@ export default function AdminDashboardPage() {
                     <div className="text-slate-400">Signed on {selectedIntake.signatureDate}</div>
                   </div>
                 </div>
-              ) : null}
+              ) : (
+                <div className="bg-[#0D1627] rounded-2xl p-12 border border-white/10 text-center text-xs text-slate-400">
+                  No court intake packet selected.
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* TAB 3: SEO & GENERATIVE AI (GEO) RANKINGS */}
+        {/* TAB 3: LIVE INCOMING TRAFFIC (GOOGLE SEARCH, ADS, AI & ORGANIC) */}
         {activeTab === "seo" && analytics && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-8 bg-[#0D1627] rounded-2xl p-6 border border-white/10 shadow-xl space-y-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <h2 className="text-lg font-serif font-bold text-white">
-                    High-Intent Bankruptcy Keyword &amp; AI Citation Performance
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Replacing expensive $65–$85/click Google Ads with owned organic &amp; Generative AI rankings
-                  </p>
+          <div className="space-y-6">
+            {/* 5 Acquisition Channel Breakdown Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div className="bg-[#0D1627] rounded-2xl p-4 border border-emerald-500/30">
+                <div className="text-[11px] font-bold uppercase text-emerald-400 flex items-center justify-between">
+                  <span>Google Organic</span>
+                  <Search className="w-3.5 h-3.5" />
                 </div>
-                <span className="bg-[#A8E028]/20 text-[#A8E028] border border-[#A8E028]/40 text-xs font-bold px-3 py-1 rounded-full">
-                  Saves ${analytics.equivalentGoogleAdsSavingsMonthly.toLocaleString()}/mo in PPC Spend
-                </span>
+                <div className="text-2xl font-serif font-bold text-white mt-1">
+                  {organicVisitors}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Search &amp; Google Maps
+                </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse text-xs">
-                  <thead>
-                    <tr className="bg-[#070D19] text-slate-400 uppercase border-b border-white/10">
-                      <th className="py-3 px-4">Target Search Query</th>
-                      <th className="py-3 px-4">Organic Rank</th>
-                      <th className="py-3 px-4">AI Overview Cited?</th>
-                      <th className="py-3 px-4">Google Ads CPC Saved</th>
-                      <th className="py-3 px-4">Target Route</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/10">
-                    {analytics.topKeywords.map((kw, i) => (
-                      <tr key={i} className="hover:bg-white/[0.03]">
-                        <td className="py-3 px-4 font-bold text-white">{kw.keyword}</td>
-                        <td className="py-3 px-4">
-                          <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold px-2 py-0.5 rounded">
-                            #{kw.position}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          {kw.aiCited ? (
-                            <span className="text-purple-300 font-bold flex items-center gap-1">
-                              <Sparkles className="w-3.5 h-3.5" /> Cited in AI Overviews
-                            </span>
-                          ) : (
-                            "Indexing"
-                          )}
-                        </td>
-                        <td className="py-3 px-4 font-semibold text-[#A8E028]">
-                          ${kw.cpcEquivalent.toFixed(2)} / click
-                        </td>
-                        <td className="py-3 px-4 font-mono text-[11px] text-slate-400">
-                          {kw.landingPage}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="bg-[#0D1627] rounded-2xl p-4 border border-amber-500/30">
+                <div className="text-[11px] font-bold uppercase text-amber-300 flex items-center justify-between">
+                  <span>Google Ads / PPC</span>
+                  <Megaphone className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-2xl font-serif font-bold text-white mt-1">
+                  {googleAdsVisitors}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  gclid / Paid Campaigns
+                </div>
+              </div>
+
+              <div className="bg-[#0D1627] rounded-2xl p-4 border border-purple-500/30">
+                <div className="text-[11px] font-bold uppercase text-purple-300 flex items-center justify-between">
+                  <span>AI Search (GEO)</span>
+                  <Sparkles className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-2xl font-serif font-bold text-white mt-1">
+                  {aiVisitors}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  ChatGPT • Perplexity • Gemini
+                </div>
+              </div>
+
+              <div className="bg-[#0D1627] rounded-2xl p-4 border border-sky-500/30">
+                <div className="text-[11px] font-bold uppercase text-sky-300 flex items-center justify-between">
+                  <span>Social &amp; Directories</span>
+                  <Globe className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-2xl font-serif font-bold text-white mt-1">
+                  {socialVisitors}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Facebook • Avvo • Justia
+                </div>
+              </div>
+
+              <div className="bg-[#0D1627] rounded-2xl p-4 border border-white/10">
+                <div className="text-[11px] font-bold uppercase text-slate-300 flex items-center justify-between">
+                  <span>Direct Visits</span>
+                  <Monitor className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-2xl font-serif font-bold text-white mt-1">
+                  {directVisitors}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Typed URL / Bookmarks
+                </div>
               </div>
             </div>
 
-            {/* County Distribution */}
-            <div className="lg:col-span-4 bg-[#0D1627] rounded-2xl p-6 border border-white/10 shadow-xl space-y-4">
-              <h3 className="text-lg font-serif font-bold text-white">
-                Lead Volume by West TN County
-              </h3>
-              <div className="space-y-3.5">
-                {analytics.countyDistribution.map((c) => (
-                  <div key={c.county} className="space-y-1.5 text-xs">
-                    <div className="flex justify-between font-semibold text-slate-200">
-                      <span>{c.county}</span>
-                      <span className="text-[#A8E028]">
-                        {c.leads} Leads ({c.percentage}%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-[#070D19] h-2.5 rounded-full overflow-hidden border border-white/5">
-                      <div
-                        className="bg-gradient-to-r from-[#A8E028] to-emerald-500 h-2.5 rounded-full"
-                        style={{ width: `${c.percentage}%` }}
-                      />
-                    </div>
+            {/* Live Incoming Visitor Telemetry Stream */}
+            <div className="bg-[#0D1627] rounded-2xl p-6 border border-white/10 shadow-xl space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <h2 className="text-lg font-serif font-bold text-white">
+                    Live Incoming Traffic Stream (Google Search, Ads, AI &amp; Direct)
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Real-time session telemetry capturing HTTP Referrer, Landing Page, Device, UTM tags, and Google Ads click IDs (`gclid`)
+                  </p>
+                </div>
+                <span className="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full">
+                  ● Tracking Active ({recentEvents.length} Recorded Visits)
+                </span>
+              </div>
+
+              {recentEvents.length === 0 ? (
+                <div className="p-8 text-center border border-dashed border-white/10 rounded-xl text-xs text-slate-400">
+                  0 visitor sessions logged since reset. Open the public homepage or any practice page in a new tab (or with `?utm_source=google&utm_medium=cpc&utm_campaign=jackson_bankruptcy`) and click <strong>Refresh Live Data</strong> to see live attribution in action!
+                </div>
+              ) : (
+                <div className="overflow-x-auto max-h-80">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#070D19] text-slate-400 uppercase border-b border-white/10">
+                        <th className="py-3 px-4">Time</th>
+                        <th className="py-3 px-4">Channel</th>
+                        <th className="py-3 px-4">Source / Referrer</th>
+                        <th className="py-3 px-4">Landing Page</th>
+                        <th className="py-3 px-4">Campaign / Keyword / Click ID</th>
+                        <th className="py-3 px-4">Device</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/10">
+                      {recentEvents.map((ev) => {
+                        const badge = CHANNEL_BADGES[ev.trafficChannel] || CHANNEL_BADGES.DIRECT;
+                        return (
+                          <tr key={ev.id} className="hover:bg-white/[0.03]">
+                            <td className="py-2.5 px-4 font-mono text-[11px] text-slate-400 whitespace-nowrap">
+                              {new Date(ev.timestamp).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                                second: "2-digit",
+                              })}
+                            </td>
+                            <td className="py-2.5 px-4">
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold uppercase ${badge.className}`}
+                              >
+                                {badge.label}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-4 font-semibold text-white">
+                              {ev.trafficSourceLabel}
+                              {ev.referrerHost && ev.referrerHost !== "direct" && (
+                                <span className="text-slate-500 font-mono text-[11px] ml-1.5">
+                                  ({ev.referrerHost})
+                                </span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-4 font-mono text-[11px] text-[#A8E028]">
+                              {ev.landingPage}
+                            </td>
+                            <td className="py-2.5 px-4 font-mono text-[11px] text-amber-300">
+                              {ev.utmCampaign || ev.utmTerm || ev.clickId ? (
+                                <>
+                                  {ev.utmCampaign && <span>camp={ev.utmCampaign} </span>}
+                                  {ev.utmTerm && <span>kw={ev.utmTerm} </span>}
+                                  {ev.clickId && <span>id={ev.clickId.slice(0, 10)}…</span>}
+                                </>
+                              ) : (
+                                <span className="text-slate-600">—</span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-4 text-slate-300 flex items-center gap-1">
+                              {ev.deviceType === "Mobile" ? (
+                                <Smartphone className="w-3.5 h-3.5 text-sky-400" />
+                              ) : (
+                                <Monitor className="w-3.5 h-3.5 text-slate-400" />
+                              )}
+                              <span>{ev.deviceType}</span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-8 bg-[#0D1627] rounded-2xl p-6 border border-white/10 shadow-xl space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <h2 className="text-lg font-serif font-bold text-white">
+                      Target Bankruptcy Keyword &amp; AI Citation Architecture
+                    </h2>
+                    <p className="text-xs text-slate-400">
+                      Built-in landing silos targeting Jackson &amp; West Tennessee high-CPC searches
+                    </p>
                   </div>
-                ))}
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#070D19] text-slate-400 uppercase border-b border-white/10">
+                        <th className="py-3 px-4">Target Search Query</th>
+                        <th className="py-3 px-4">AI Overview Structured?</th>
+                        <th className="py-3 px-4">Google Ads CPC Benchmark</th>
+                        <th className="py-3 px-4">Target Route</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/10">
+                      {analytics.topKeywords.map((kw, i) => (
+                        <tr key={i} className="hover:bg-white/[0.03]">
+                          <td className="py-3 px-4 font-bold text-white">{kw.keyword}</td>
+                          <td className="py-3 px-4">
+                            {kw.aiCited ? (
+                              <span className="text-purple-300 font-bold flex items-center gap-1">
+                                <Sparkles className="w-3.5 h-3.5" /> GEO Schema Active
+                              </span>
+                            ) : (
+                              "Indexing"
+                            )}
+                          </td>
+                          <td className="py-3 px-4 font-semibold text-[#A8E028]">
+                            ${kw.cpcEquivalent.toFixed(2)} / click
+                          </td>
+                          <td className="py-3 px-4 font-mono text-[11px] text-slate-400">
+                            {kw.landingPage}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* County Distribution */}
+              <div className="lg:col-span-4 bg-[#0D1627] rounded-2xl p-6 border border-white/10 shadow-xl space-y-4">
+                <h3 className="text-lg font-serif font-bold text-white">
+                  Live Lead Volume by County
+                </h3>
+                <div className="space-y-3.5">
+                  {analytics.countyDistribution.map((c) => (
+                    <div key={c.county} className="space-y-1.5 text-xs">
+                      <div className="flex justify-between font-semibold text-slate-200">
+                        <span>{c.county}</span>
+                        <span className="text-[#A8E028]">
+                          {c.leads} Leads ({c.percentage}%)
+                        </span>
+                      </div>
+                      <div className="w-full bg-[#070D19] h-2.5 rounded-full overflow-hidden border border-white/5">
+                        <div
+                          className="bg-gradient-to-r from-[#A8E028] to-emerald-500 h-2.5 rounded-full transition-all"
+                          style={{ width: `${c.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -825,7 +1121,7 @@ export default function AdminDashboardPage() {
                   Pre-Qualified &amp; Signed Court Packets
                 </h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Every prospect is triaged by urgency (Foreclosure/Repo vs. Garnishment vs. Unsecured Debt), pre-qualified for Chapter 7 vs. Chapter 13, and guided through a 5-step Court Intake Worksheet before their consultation.
+                  Every prospect is triaged by urgency (Foreclosure/Repo vs. Garnishment vs. Unsecured Debt), attributed to its exact acquisition channel (Google Organic, Google Ads, AI Search, or Direct), and guided through a 5-step Court Intake Worksheet before their consultation.
                 </p>
               </div>
             </div>

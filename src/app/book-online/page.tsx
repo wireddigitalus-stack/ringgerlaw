@@ -47,10 +47,13 @@ export default function BookOnlinePage() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      const { captureOrGetAttribution } = await import("@/lib/attribution");
+      const attribution = captureOrGetAttribution();
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          ...(attribution || {}),
           ...form,
           sourcePage: "/book-online",
           captureMethod: "Free Consultation Form",
