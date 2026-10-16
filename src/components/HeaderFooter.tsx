@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Phone,
   ShieldCheck,
@@ -461,6 +462,11 @@ export function Header() {
 }
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) {
+    return null;
+  }
+
   return (
     <footer className="bg-navy-950 text-slate-300 border-t border-white/10">
       {/* Pre-Footer Callout Banner */}
