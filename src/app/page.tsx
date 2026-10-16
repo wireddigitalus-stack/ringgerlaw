@@ -127,15 +127,15 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Side: Extra-Large Cutout Portrait of Louis W. Ringger Jr. Justified Flush to Right Screen Edge */}
-            <div className="lg:col-span-5 relative flex items-end justify-end pr-0 mr-0">
-              <div className="relative w-full flex items-end justify-end">
-                {/* Name & Title Overlay Positioned to the Left of His Shoulder like the Original Banner */}
-                <div className="relative lg:absolute bottom-8 lg:bottom-12 left-4 lg:left-auto lg:right-[515px] xl:right-[600px] z-20 text-left lg:text-right whitespace-nowrap drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
-                  <div className="text-2xl sm:text-3xl xl:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            {/* Right Side: Responsive Cutout Portrait of Louis W. Ringger Jr. Justified Flush to Right Screen Edge */}
+            <div className="lg:col-span-5 relative flex items-end justify-end pr-0 mr-0 mt-4 lg:mt-0">
+              <div className="relative w-full flex flex-col sm:flex-row items-end justify-end">
+                {/* Name & Title Overlay Positioned to the Left of His Shoulder and Scaling Responsively */}
+                <div className="relative sm:absolute bottom-4 sm:bottom-8 lg:bottom-12 left-4 sm:left-auto sm:right-[54%] lg:right-[74%] xl:right-[78%] z-20 text-left sm:text-right whitespace-nowrap drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)] mb-2 sm:mb-0 self-start sm:self-auto px-4 sm:px-0">
+                  <div className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-extrabold text-white tracking-tight leading-tight">
                     Louis W. Ringger Jr.
                   </div>
-                  <div className="text-xl sm:text-2xl xl:text-3xl font-extrabold text-[#A8E028] leading-tight">
+                  <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-extrabold text-[#A8E028] leading-tight">
                     Attorney at Law
                   </div>
                 </div>
@@ -144,7 +144,7 @@ export default function HomePage() {
                 <img
                   src="https://static.wixstatic.com/media/44d8da_50b497936b394f05978c2296d23a252d~mv2.png/v1/fill/w_1260,h_1680,al_c,q_90/LR%20edit.png"
                   alt="Louis W. Ringger Jr. — Attorney at Law in Jackson, Tennessee"
-                  className="relative z-10 w-[455px] sm:w-[585px] lg:w-[670px] xl:w-[750px] max-w-none h-auto object-contain object-right-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.85)] select-none ml-auto mr-0"
+                  className="relative z-10 w-[clamp(260px,68vw,460px)] sm:w-[clamp(340px,50vw,540px)] lg:w-[clamp(440px,42vw,680px)] xl:w-[clamp(540px,40vw,750px)] h-auto object-contain object-right-bottom drop-shadow-[0_20px_40px_rgba(0,0,0,0.85)] select-none ml-auto mr-0"
                 />
               </div>
             </div>
