@@ -41,11 +41,20 @@ export async function generateMetadata({
       siteName: "Ringger Law",
       locale: "en_US",
       type: "website",
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: page.metaTitle,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: page.metaTitle,
       description: page.metaDescription,
+      images: ["/og-image.png"],
     },
   };
 }

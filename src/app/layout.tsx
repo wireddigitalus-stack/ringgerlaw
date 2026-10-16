@@ -28,6 +28,15 @@ export const metadata: Metadata = {
     "bankruptcy lawyer gibson county tn",
     "no money down bankruptcy jackson tn",
   ],
+  icons: {
+    icon: [
+      { url: "/favicon.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: ["/favicon.png"],
+    apple: [
+      { url: "/favicon.png", sizes: "512x512", type: "image/png" },
+    ],
+  },
   openGraph: {
     title: "Ringger Law | Eliminate Credit Card & Medical Debt. Stop Foreclosures | Jackson, TN",
     description:
@@ -36,12 +45,21 @@ export const metadata: Metadata = {
     siteName: "Ringger Law",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Ringger Law — Eliminate Credit Card & Medical Debt in Jackson & West Tennessee",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Ringger Law | Bankruptcy Attorney Jackson TN | Est. 1981",
     description:
       "Eliminate credit card & medical debt, stop foreclosures, car repossessions, and 25% wage garnishments across West Tennessee. Free Consultation.",
+    images: ["/og-image.png"],
   },
   robots: {
     index: true,

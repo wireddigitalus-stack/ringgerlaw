@@ -29,6 +29,21 @@ export const metadata: Metadata = {
     siteName: "Ringger Law",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "About Ringger Law — Founded in 1981 in Jackson, TN",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About Ringger Law | Founded in 1981 | Louis W. Ringger Jr.",
+    description:
+      "Over 45 years helping Jackson and West Tennessee families eliminate debt through Chapter 7 and Chapter 13 bankruptcy.",
+    images: ["/og-image.png"],
   },
 };
 

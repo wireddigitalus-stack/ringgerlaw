@@ -19,6 +19,21 @@ export const metadata: Metadata = {
     siteName: "Ringger Law",
     locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Contact Ringger Law — Jackson, TN Bankruptcy Attorney",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Contact Ringger Law | Jackson, TN | (731) 421-1501",
+    description:
+      "Contact Attorney Louis W. Ringger Jr. in Jackson, TN for a free bankruptcy consultation. Call (731) 421-1501.",
+    images: ["/og-image.png"],
   },
 };
 
