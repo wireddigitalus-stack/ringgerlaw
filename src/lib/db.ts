@@ -98,6 +98,7 @@ export interface IntakeRecord {
 export interface TrafficEventRecord {
   id: string;
   timestamp: string;
+  eventType?: "PAGE_VISIT" | "PHONE_CALL_CLICK";
   trafficChannel: TrafficChannel;
   trafficSourceLabel: string;
   referrerHost: string;
@@ -119,6 +120,7 @@ export interface AnalyticsSummary {
   aiSearchReferrals30d: number;
   socialReferralVisitors30d: number;
   directVisitors30d: number;
+  phoneCallClicks30d: number;
   equivalentGoogleAdsSavingsMonthly: number;
   averageCpcBankruptcyJacksonTN: number;
   topKeywords: {
@@ -219,6 +221,7 @@ const INITIAL_DB: DatabaseSchema = {
     aiSearchReferrals30d: 0,
     socialReferralVisitors30d: 0,
     directVisitors30d: 0,
+    phoneCallClicks30d: 0,
     equivalentGoogleAdsSavingsMonthly: 0,
     averageCpcBankruptcyJacksonTN: 64.5,
     topKeywords: DEFAULT_KEYWORDS,
@@ -235,14 +238,17 @@ export function computeLiveAnalytics(
   events: TrafficEventRecord[],
   leads: LeadRecord[]
 ): AnalyticsSummary {
-  const organicCount = events.filter(
+  const visitEvents = events.filter((e) => e.eventType !== "PHONE_CALL_CLICK");
+  const phoneCallClicksCount = events.filter((e) => e.eventType === "PHONE_CALL_CLICK").length;
+
+  const organicCount = visitEvents.filter(
     (e) => e.trafficChannel === "GOOGLE_ORGANIC" || e.trafficChannel === "OTHER_ORGANIC"
   ).length;
-  const googleAdsCount = events.filter((e) => e.trafficChannel === "GOOGLE_ADS").length;
-  const aiCount = events.filter((e) => e.trafficChannel === "AI_SEARCH").length;
-  const socialCount = events.filter((e) => e.trafficChannel === "SOCIAL_REFERRAL").length;
-  const directCount = events.filter((e) => e.trafficChannel === "DIRECT").length;
-  const totalVisitors = events.length;
+  const googleAdsCount = visitEvents.filter((e) => e.trafficChannel === "GOOGLE_ADS").length;
+  const aiCount = visitEvents.filter((e) => e.trafficChannel === "AI_SEARCH").length;
+  const socialCount = visitEvents.filter((e) => e.trafficChannel === "SOCIAL_REFERRAL").length;
+  const directCount = visitEvents.filter((e) => e.trafficChannel === "DIRECT").length;
+  const totalVisitors = visitEvents.length;
 
   const avgCpc = 64.5;
   const equivalentSavings = Math.round((organicCount + aiCount) * avgCpc);
@@ -266,6 +272,7 @@ export function computeLiveAnalytics(
     aiSearchReferrals30d: aiCount,
     socialReferralVisitors30d: socialCount,
     directVisitors30d: directCount,
+    phoneCallClicks30d: phoneCallClicksCount,
     equivalentGoogleAdsSavingsMonthly: equivalentSavings,
     averageCpcBankruptcyJacksonTN: avgCpc,
     topKeywords: DEFAULT_KEYWORDS,

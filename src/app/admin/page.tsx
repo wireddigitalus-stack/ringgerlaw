@@ -405,6 +405,7 @@ export default function AdminDashboardPage() {
   const aiVisitors = analytics?.aiSearchReferrals30d ?? 0;
   const socialVisitors = analytics?.socialReferralVisitors30d ?? 0;
   const directVisitors = analytics?.directVisitors30d ?? 0;
+  const phoneCallClicks = analytics?.phoneCallClicks30d ?? 0;
   const ppcSavings = analytics?.equivalentGoogleAdsSavingsMonthly ?? 0;
   const recentEvents = analytics?.recentTrafficEvents || [];
 
@@ -474,10 +475,15 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-[#0D1627] rounded-2xl p-5 border border-white/10 shadow-xl">
             <div className="flex items-center justify-between text-xs font-bold uppercase text-slate-400 mb-2">
-              <span>Live Bankruptcy Leads</span>
+              <span>Live Leads &amp; Call Clicks</span>
               <Users className="w-4 h-4 text-[#A8E028]" />
             </div>
-            <div className="text-3xl font-serif font-bold text-white">{leads.length}</div>
+            <div className="flex items-baseline gap-3">
+              <div className="text-3xl font-serif font-bold text-white">{leads.length}</div>
+              <span className="text-xs font-bold text-[#A8E028] bg-[#A8E028]/15 border border-[#A8E028]/30 px-2 py-0.5 rounded-full">
+                📞 {phoneCallClicks} Call {phoneCallClicks === 1 ? "Click" : "Clicks"}
+              </span>
+            </div>
             <div className="text-xs text-red-400 font-semibold mt-1.5 flex items-center gap-1">
               <span>● {emergencyCount} Urgent Foreclosure / Repo Leads</span>
             </div>
@@ -506,8 +512,9 @@ export default function AdminDashboardPage() {
               {totalVisitors.toLocaleString()}
             </div>
             <div className="text-xs text-slate-400 mt-1.5">
-              Organic: <strong className="text-emerald-400">{organicVisitors}</strong> • Ads:{" "}
-              <strong className="text-amber-300">{googleAdsVisitors}</strong> • AI:{" "}
+              Ads: <strong className="text-amber-300">{googleAdsVisitors}</strong> • Organic:{" "}
+              <strong className="text-emerald-400">{organicVisitors}</strong> • Direct:{" "}
+              <strong className="text-slate-200">{directVisitors}</strong> • AI:{" "}
               <strong className="text-purple-300">{aiVisitors}</strong>
             </div>
           </div>
@@ -954,8 +961,8 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* 5 Acquisition Channel Breakdown Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            {/* 6 Acquisition Channel & Call Click Breakdown Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               <div className="bg-[#0D1627] rounded-2xl p-4 border border-emerald-500/30">
                 <div className="text-[11px] font-bold uppercase text-emerald-400 flex items-center justify-between">
                   <span>Google Organic</span>
@@ -979,6 +986,19 @@ export default function AdminDashboardPage() {
                 </div>
                 <div className="text-[11px] text-slate-400 mt-0.5">
                   gclid / Paid Campaigns
+                </div>
+              </div>
+
+              <div className="bg-[#0D1627] rounded-2xl p-4 border border-[#A8E028]/40">
+                <div className="text-[11px] font-bold uppercase text-[#A8E028] flex items-center justify-between">
+                  <span>Phone Call Clicks</span>
+                  <Phone className="w-3.5 h-3.5" />
+                </div>
+                <div className="text-2xl font-serif font-bold text-[#A8E028] mt-1">
+                  {phoneCallClicks}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  Tapped (731) 421-1501
                 </div>
               </div>
 
@@ -1027,14 +1047,14 @@ export default function AdminDashboardPage() {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h2 className="text-lg font-serif font-bold text-white">
-                    Live Incoming Traffic Stream (Google Search, Ads, AI &amp; Direct)
+                    Live Incoming Traffic &amp; Phone Call Click Stream
                   </h2>
                   <p className="text-xs text-slate-400">
-                    Real-time session telemetry capturing HTTP Referrer, Landing Page, Device, UTM tags, and Google Ads click IDs (`gclid`)
+                    Real-time session telemetry capturing HTTP Referrer, Landing Page, Phone Call Clicks, Device, UTM tags, and Google Ads click IDs (`gclid`)
                   </p>
                 </div>
                 <span className="bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 text-xs font-bold px-3 py-1 rounded-full">
-                  ● Tracking Active ({recentEvents.length} Recorded Visits)
+                  ● Tracking Active ({recentEvents.length} Recorded Events)
                 </span>
               </div>
 
@@ -1048,9 +1068,9 @@ export default function AdminDashboardPage() {
                     <thead>
                       <tr className="bg-[#070D19] text-slate-400 uppercase border-b border-white/10">
                         <th className="py-3 px-4">Time</th>
-                        <th className="py-3 px-4">Channel</th>
+                        <th className="py-3 px-4">Channel / Action</th>
                         <th className="py-3 px-4">Source / Referrer</th>
-                        <th className="py-3 px-4">Landing Page</th>
+                        <th className="py-3 px-4">Page</th>
                         <th className="py-3 px-4">Campaign / Keyword / Click ID</th>
                         <th className="py-3 px-4">Device</th>
                       </tr>
@@ -1058,8 +1078,16 @@ export default function AdminDashboardPage() {
                     <tbody className="divide-y divide-white/10">
                       {recentEvents.map((ev) => {
                         const badge = CHANNEL_BADGES[ev.trafficChannel] || CHANNEL_BADGES.DIRECT;
+                        const isCallClick = ev.eventType === "PHONE_CALL_CLICK";
                         return (
-                          <tr key={ev.id} className="hover:bg-white/[0.03]">
+                          <tr
+                            key={ev.id}
+                            className={
+                              isCallClick
+                                ? "bg-[#A8E028]/10 hover:bg-[#A8E028]/15"
+                                : "hover:bg-white/[0.03]"
+                            }
+                          >
                             <td className="py-2.5 px-4 font-mono text-[11px] text-slate-400 whitespace-nowrap">
                               {new Date(ev.timestamp).toLocaleTimeString([], {
                                 hour: "2-digit",
@@ -1068,13 +1096,21 @@ export default function AdminDashboardPage() {
                               })}
                             </td>
                             <td className="py-2.5 px-4">
-                              <span
-                                className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold uppercase ${badge.className}`}
-                              >
-                                {badge.label}
-                              </span>
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span
+                                  className={`inline-flex items-center px-2 py-0.5 rounded border text-[10px] font-bold uppercase ${badge.className}`}
+                                >
+                                  {badge.label}
+                                </span>
+                                {isCallClick && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#A8E028] text-black text-[10px] font-extrabold uppercase">
+                                    📞 Clicked to Call
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="py-2.5 px-4 font-semibold text-white">
+                              {isCallClick ? "Tapped (731) 421-1501 • " : ""}
                               {ev.trafficSourceLabel}
                               {ev.referrerHost && ev.referrerHost !== "direct" && (
                                 <span className="text-slate-500 font-mono text-[11px] ml-1.5">
@@ -1083,7 +1119,7 @@ export default function AdminDashboardPage() {
                               )}
                             </td>
                             <td className="py-2.5 px-4 font-mono text-[11px] text-[#A8E028]">
-                              {ev.landingPage}
+                              {ev.currentPath || ev.landingPage}
                             </td>
                             <td className="py-2.5 px-4 font-mono text-[11px] text-amber-300">
                               {ev.utmCampaign || ev.utmTerm || ev.clickId ? (

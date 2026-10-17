@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
     }
 
     const summary = await recordTrafficVisitAsync({
+      eventType: body.eventType === "PHONE_CALL_CLICK" ? "PHONE_CALL_CLICK" : "PAGE_VISIT",
       trafficChannel: (body.trafficChannel || "DIRECT") as TrafficChannel,
       trafficSourceLabel: body.trafficSourceLabel || "Direct Visit",
       referrerHost: body.referrerHost || "direct",

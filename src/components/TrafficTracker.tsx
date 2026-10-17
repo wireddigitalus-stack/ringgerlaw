@@ -33,7 +33,7 @@ export function TrafficTracker() {
     }
   }, [pathname]);
 
-  // Global Click-to-Call (tel:7314211501) Conversion Listener for Google Ads #164-867-7882
+  // Global Click-to-Call (tel:7314211501) Conversion Listener for Google Ads #164-867-7882 & Admin Telemetry
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (pathname?.startsWith("/admin")) return;
@@ -46,6 +46,20 @@ export function TrafficTracker() {
           action: "PHONE_CALL_CLICK",
           captureMethod: `Click-to-Call (${anchor.getAttribute("href") || "tel:7314211501"})`,
           primaryConcern: "Direct Phone Call Inquiry",
+        });
+
+        const attribution = captureOrGetAttribution();
+        fetch("/api/analytics", {
+          method: "POST",
+          keepalive: true,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...(attribution || {}),
+            eventType: "PHONE_CALL_CLICK",
+            currentPath: pathname || "/",
+          }),
+        }).catch(() => {
+          // Non-blocking telemetry
         });
       }
     }
