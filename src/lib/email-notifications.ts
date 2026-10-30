@@ -1,4 +1,5 @@
 import { IntakeRecord, LeadRecord } from "@/lib/db";
+import { escapeHtml } from "@/lib/bot-shield";
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 const RESEND_DOMAINS_URL = "https://api.resend.com/domains";
@@ -123,7 +124,8 @@ async function sendResendEmail(payload: {
 }
 
 export async function sendNewLeadNotification(lead: LeadRecord): Promise<EmailDispatchResult> {
-  const fullName = `${lead.firstName} ${lead.lastName || ""}`.trim();
+  const fullNameRaw = `${lead.firstName} ${lead.lastName || ""}`.trim();
+  const fullName = escapeHtml(fullNameRaw);
   const isEmergency = lead.urgency === "EMERGENCY_FORECLOSURE_REPO";
   const isGarnishment = lead.urgency === "WAGE_GARNISHMENT";
 
@@ -133,7 +135,7 @@ export async function sendNewLeadNotification(lead: LeadRecord): Promise<EmailDi
     ? "⚠️ 25% WAGE GARNISHMENT LEAD"
     : "✅ NEW BANKRUPTCY CONSULTATION LEAD";
 
-  const subject = `${isEmergency ? "🚨 URGENT: " : "⚖️ New Lead: "}${fullName} — ${lead.primaryConcern} (${lead.county})`;
+  const subject = `${isEmergency ? "🚨 URGENT: " : "⚖️ New Lead: "}${fullNameRaw} — ${lead.primaryConcern} (${lead.county})`;
   const cleanPhone = (lead.phone || "").replace(/\D/g, "");
 
   const html = `
@@ -147,14 +149,14 @@ export async function sendNewLeadNotification(lead: LeadRecord): Promise<EmailDi
           ${fullName}
         </h1>
         <p style="margin: 0 0 20px 0; font-size: 14px; color: #CBD5E1;">
-          Captured via <strong>${lead.captureMethod}</strong> on <code>${lead.sourcePage}</code>
+          Captured via <strong>${escapeHtml(lead.captureMethod)}</strong> on <code>${escapeHtml(lead.sourcePage)}</code>
         </p>
 
         ${
           cleanPhone
             ? `<div style="margin-bottom: 24px;">
                 <a href="tel:${cleanPhone}" style="display: inline-block; background: #A8E028; color: #060B14; font-weight: 900; font-size: 16px; text-decoration: none; padding: 14px 24px; border-radius: 12px; margin-right: 10px;">
-                  📞 Call ${lead.phone} Now
+                  📞 Call ${escapeHtml(lead.phone)} Now
                 </a>
                 <a href="https://www.ringgerlaw.com/admin" style="display: inline-block; background: #1E293B; color: #F5D76E; border: 1px solid #D4AF37; font-weight: 800; font-size: 15px; text-decoration: none; padding: 13px 20px; border-radius: 12px;">
                   🔒 Open Admin Portal →
@@ -170,23 +172,23 @@ export async function sendNewLeadNotification(lead: LeadRecord): Promise<EmailDi
           </tr>
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Phone Number</td>
-            <td style="padding: 12px 16px; color: #A8E028; font-weight: 800;">${lead.phone || "Not provided"}</td>
+            <td style="padding: 12px 16px; color: #A8E028; font-weight: 800;">${escapeHtml(lead.phone || "Not provided")}</td>
           </tr>
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Email Address</td>
-            <td style="padding: 12px 16px; color: #FFFFFF;">${lead.email || "Not provided"}</td>
+            <td style="padding: 12px 16px; color: #FFFFFF;">${escapeHtml(lead.email || "Not provided")}</td>
           </tr>
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">West TN County</td>
-            <td style="padding: 12px 16px; color: #FFFFFF; font-weight: 700;">${lead.county}</td>
+            <td style="padding: 12px 16px; color: #FFFFFF; font-weight: 700;">${escapeHtml(lead.county)}</td>
           </tr>
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Primary Debt Concern</td>
-            <td style="padding: 12px 16px; color: #F5D76E; font-weight: 800;">${lead.primaryConcern}</td>
+            <td style="padding: 12px 16px; color: #F5D76E; font-weight: 800;">${escapeHtml(lead.primaryConcern)}</td>
           </tr>
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Recommended Chapter</td>
-            <td style="padding: 12px 16px; color: #FFFFFF; font-weight: 700;">${lead.recommendedChapter}</td>
+            <td style="padding: 12px 16px; color: #FFFFFF; font-weight: 700;">${escapeHtml(lead.recommendedChapter)}</td>
           </tr>
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Estimated Unsecured Debt</td>
@@ -202,22 +204,22 @@ export async function sendNewLeadNotification(lead: LeadRecord): Promise<EmailDi
             lead.preferredDate || lead.preferredTime
               ? `<tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
                   <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Requested Consult Slot</td>
-                  <td style="padding: 12px 16px; color: #A8E028; font-weight: 700;">${lead.preferredDate || ""} ${lead.preferredTime || ""}</td>
+                  <td style="padding: 12px 16px; color: #A8E028; font-weight: 700;">${escapeHtml(lead.preferredDate || "")} ${escapeHtml(lead.preferredTime || "")}</td>
                 </tr>`
               : ""
           }
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Traffic Attribution Source</td>
             <td style="padding: 12px 16px; color: #38BDF8; font-weight: 700;">
-              ${lead.trafficSourceLabel || lead.trafficChannel || "Direct Visit"}
-              ${lead.clickId ? ` (GCLID: ${lead.clickId})` : ""}
+              ${escapeHtml(lead.trafficSourceLabel || lead.trafficChannel || "Direct Visit")}
+              ${lead.clickId ? ` (GCLID: ${escapeHtml(lead.clickId)})` : ""}
             </td>
           </tr>
           ${
             lead.notes
               ? `<tr>
                   <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Client Notes</td>
-                  <td style="padding: 12px 16px; color: #E2E8F0;">${lead.notes}</td>
+                  <td style="padding: 12px 16px; color: #E2E8F0;">${escapeHtml(lead.notes)}</td>
                 </tr>`
               : ""
           }
@@ -238,7 +240,8 @@ export async function sendNewLeadNotification(lead: LeadRecord): Promise<EmailDi
 }
 
 export async function sendNewIntakeNotification(intake: IntakeRecord): Promise<EmailDispatchResult> {
-  const subject = `📋 Signed 5-Step Court Intake Packet: ${intake.fullName}`;
+  const safeName = escapeHtml(intake.fullName);
+  const subject = `📋 Signed 5-Step Court Intake Packet: ${safeName}`;
   const cleanPhone = (intake.phone || "").replace(/\D/g, "");
 
   const html = `
@@ -249,17 +252,17 @@ export async function sendNewIntakeNotification(intake: IntakeRecord): Promise<E
           📋 SIGNED 5-STEP COURT INTAKE WORKSHEET
         </div>
         <h1 style="margin: 0 0 8px 0; font-size: 24px; color: #FFFFFF;">
-          ${intake.fullName}
+          ${safeName}
         </h1>
         <p style="margin: 0 0 20px 0; font-size: 14px; color: #CBD5E1;">
-          Electronically signed by <strong>${intake.debtorSignature}</strong> on ${intake.signatureDate}
+          Electronically signed by <strong>${escapeHtml(intake.debtorSignature)}</strong> on ${escapeHtml(intake.signatureDate)}
         </p>
 
         <div style="margin-bottom: 24px;">
           ${
             cleanPhone
               ? `<a href="tel:${cleanPhone}" style="display: inline-block; background: #A8E028; color: #060B14; font-weight: 900; font-size: 16px; text-decoration: none; padding: 14px 24px; border-radius: 12px; margin-right: 10px;">
-                  📞 Call ${intake.phone}
+                  📞 Call ${escapeHtml(intake.phone)}
                 </a>`
               : ""
           }
@@ -271,29 +274,29 @@ export async function sendNewIntakeNotification(intake: IntakeRecord): Promise<E
         <table style="width: 100%; border-collapse: collapse; background: #131F36; border-radius: 12px; overflow: hidden; font-size: 14px;">
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600; width: 40%;">Full Name</td>
-            <td style="padding: 12px 16px; color: #FFFFFF; font-weight: 800;">${intake.fullName}</td>
+            <td style="padding: 12px 16px; color: #FFFFFF; font-weight: 800;">${safeName}</td>
           </tr>
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Phone / Email</td>
-            <td style="padding: 12px 16px; color: #A8E028; font-weight: 700;">${intake.phone} • ${intake.email}</td>
+            <td style="padding: 12px 16px; color: #A8E028; font-weight: 700;">${escapeHtml(intake.phone)} • ${escapeHtml(intake.email)}</td>
           </tr>
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Mailing Address</td>
-            <td style="padding: 12px 16px; color: #FFFFFF;">${intake.mailingAddress}</td>
+            <td style="padding: 12px 16px; color: #FFFFFF;">${escapeHtml(intake.mailingAddress)}</td>
           </tr>
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Gross Monthly Income</td>
-            <td style="padding: 12px 16px; color: #FFFFFF; font-weight: 700;">${intake.grossMonthlyIncome} (${intake.payFrequency})</td>
+            <td style="padding: 12px 16px; color: #FFFFFF; font-weight: 700;">${escapeHtml(intake.grossMonthlyIncome)} (${escapeHtml(intake.payFrequency)})</td>
           </tr>
           <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Real Estate / Foreclosure Notice</td>
             <td style="padding: 12px 16px; color: #F5D76E; font-weight: 700;">
-              ${intake.realEstateOwned || "None"} • Foreclosure Notice: ${intake.receivedForeclosureNotice ? "YES" : "No"}
+              ${escapeHtml(intake.realEstateOwned || "None")} • Foreclosure Notice: ${intake.receivedForeclosureNotice ? "YES" : "No"}
             </td>
           </tr>
           <tr>
             <td style="padding: 12px 16px; color: #94A3B8; font-weight: 600;">Vehicles Owned</td>
-            <td style="padding: 12px 16px; color: #FFFFFF;">${intake.vehiclesOwned || "None"}</td>
+            <td style="padding: 12px 16px; color: #FFFFFF;">${escapeHtml(intake.vehiclesOwned || "None")}</td>
           </tr>
         </table>
       </div>

@@ -8,6 +8,7 @@ import {
   LeadStatus,
 } from "@/lib/db";
 import { sendNewLeadNotification } from "@/lib/email-notifications";
+import { verifyHumanSubmission } from "@/lib/bot-shield";
 
 export async function GET() {
   const db = await getDbAsync();
@@ -25,6 +26,35 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+
+    // 6-Layer Anti-Bot, Anti-Phishing & B2B Spam Verification
+    const botCheck = verifyHumanSubmission(
+      {
+        firstName: body.firstName,
+        lastName: body.lastName,
+        phone: body.phone,
+        email: body.email,
+        notes: body.notes,
+        preferredDate: body.preferredDate,
+        primaryConcern: body.primaryConcern,
+        companyWebsite: body.companyWebsite,
+        faxNumber: body.faxNumber,
+        website: body.website,
+        formStartedAt: body.formStartedAt,
+      },
+      req
+    );
+
+    if (botCheck.blocked) {
+      console.warn("[BotShield] Blocked suspicious lead submission:", botCheck.reason);
+      // Silently drop so automated bots do not retry or adapt
+      return NextResponse.json({
+        success: true,
+        blockedBot: true,
+        reason: botCheck.reason,
+      });
+    }
+
     const created = await addLeadAsync({
       firstName: body.firstName || "Prospective Client",
       lastName: body.lastName || "",

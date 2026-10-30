@@ -25,6 +25,9 @@ const TIME_SLOTS = [
 ];
 
 export default function BookOnlinePage() {
+  const minBookingDate = new Date().toISOString().slice(0, 10);
+  const [formStartedAt] = useState(() => Date.now());
+  const [companyWebsite, setCompanyWebsite] = useState("");
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -55,6 +58,8 @@ export default function BookOnlinePage() {
         body: JSON.stringify({
           ...(attribution || {}),
           ...form,
+          companyWebsite,
+          formStartedAt,
           sourcePage: "/book-online",
           captureMethod: "Free Consultation Form",
           notes: `${form.consultType} requested for ${form.preferredDate} at ${form.preferredTime}. Client notes: ${
@@ -63,7 +68,7 @@ export default function BookOnlinePage() {
         }),
       });
       const data = await res.json();
-      if (data.lead) {
+      if (data.lead && !data.blockedBot) {
         const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
         trackGoogleAdsConversion({
           action: "CONSULTATION_BOOKED",
@@ -77,6 +82,28 @@ export default function BookOnlinePage() {
           captureMethod: "Online Booking Page",
         });
         setBookedLead(data.lead);
+      } else if (data.blockedBot) {
+        setBookedLead({
+          id: "LD-CONFIRMED",
+          createdAt: new Date().toISOString(),
+          firstName: form.firstName,
+          lastName: form.lastName,
+          phone: form.phone,
+          email: form.email,
+          county: form.county,
+          primaryConcern: form.primaryConcern,
+          estimatedDebt: form.estimatedDebt,
+          ownsHome: form.ownsHome,
+          behindOnPayments: form.behindOnPayments,
+          urgency: "STANDARD_DEBT_RELIEF",
+          recommendedChapter: "Chapter 7 ($0 Down Eligible)",
+          estimatedCaseValue: 0,
+          status: "NEW",
+          preferredDate: form.preferredDate,
+          notes: "",
+          sourcePage: "/book-online",
+          captureMethod: "Free Consultation Form",
+        });
       }
     } finally {
       setSubmitting(false);
@@ -174,6 +201,7 @@ export default function BookOnlinePage() {
                   <input
                     type="date"
                     name="preferredDate"
+                    min={minBookingDate}
                     required
                     value={form.preferredDate}
                     onChange={(e) => setForm({ ...form, preferredDate: e.target.value })}
@@ -335,6 +363,19 @@ export default function BookOnlinePage() {
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
                   placeholder="Tell us briefly about your situation or any urgent court/sale dates..."
                   className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm"
+                />
+              </div>
+
+              <div aria-hidden="true" className="hidden" style={{ position: "absolute", left: "-9999px" }}>
+                <label htmlFor="book-company-website">Company Website</label>
+                <input
+                  id="book-company-website"
+                  type="text"
+                  name="companyWebsite"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={companyWebsite}
+                  onChange={(e) => setCompanyWebsite(e.target.value)}
                 />
               </div>
 

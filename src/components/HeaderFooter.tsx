@@ -81,6 +81,8 @@ export function Header() {
 
   const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
   const [emergencySubmitted, setEmergencySubmitted] = useState(false);
+  const [emergencyFormStartedAt, setEmergencyFormStartedAt] = useState(() => Date.now());
+  const [companyWebsite, setCompanyWebsite] = useState("");
   const [emergencyForm, setEmergencyForm] = useState({
     firstName: "",
     phone: "",
@@ -106,6 +108,8 @@ export function Header() {
           email: "",
           county: emergencyForm.county,
           primaryConcern: emergencyForm.primaryConcern,
+          companyWebsite,
+          formStartedAt: emergencyFormStartedAt,
           estimatedDebt: 45000,
           ownsHome: emergencyForm.primaryConcern.includes("Foreclosure"),
           behindOnPayments: true,
@@ -115,16 +119,18 @@ export function Header() {
         }),
       });
       const data = await res.json();
-      const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
-      trackGoogleAdsConversion({
-        action: "EMERGENCY_STAY_LEAD",
-        leadId: data?.lead?.id,
-        firstName: emergencyForm.firstName,
-        phone: emergencyForm.phone,
-        county: emergencyForm.county,
-        primaryConcern: emergencyForm.primaryConcern,
-        captureMethod: "Emergency Hotline Bar",
-      });
+      if (!data?.blockedBot) {
+        const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
+        trackGoogleAdsConversion({
+          action: "EMERGENCY_STAY_LEAD",
+          leadId: data?.lead?.id,
+          firstName: emergencyForm.firstName,
+          phone: emergencyForm.phone,
+          county: emergencyForm.county,
+          primaryConcern: emergencyForm.primaryConcern,
+          captureMethod: "Emergency Hotline Bar",
+        });
+      }
       setEmergencySubmitted(true);
     } finally {
       setSubmitting(false);
@@ -150,6 +156,7 @@ export function Header() {
           <button
             onClick={() => {
               setEmergencySubmitted(false);
+              setEmergencyFormStartedAt(Date.now());
               setEmergencyModalOpen(true);
             }}
             className="text-gold-400 hover:text-gold-300 font-bold underline underline-offset-4 inline-flex items-center gap-[4px] cursor-pointer whitespace-nowrap ml-auto text-[12px]"
@@ -524,6 +531,19 @@ export function Header() {
                     <option>Henderson County (Lexington)</option>
                     <option>Other West TN County</option>
                   </select>
+                </div>
+
+                <div aria-hidden="true" className="hidden" style={{ position: "absolute", left: "-9999px" }}>
+                  <label htmlFor="emergency-company-website">Company Website</label>
+                  <input
+                    id="emergency-company-website"
+                    type="text"
+                    name="companyWebsite"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={companyWebsite}
+                    onChange={(e) => setCompanyWebsite(e.target.value)}
+                  />
                 </div>
 
                 <button

@@ -34,6 +34,8 @@ export default function ClientIntakePortalPage() {
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [savedRecord, setSavedRecord] = useState<IntakeRecord | null>(null);
+  const [formStartedAt] = useState(() => Date.now());
+  const [companyWebsite, setCompanyWebsite] = useState("");
 
   const [form, setForm] = useState({
     // Step 1: Personal & Marital
@@ -107,10 +109,12 @@ export default function ClientIntakePortalPage() {
         body: JSON.stringify({
           ...(attribution || {}),
           ...form,
+          companyWebsite,
+          formStartedAt,
         }),
       });
       const data = await res.json();
-      if (data.intake) {
+      if (data.intake && !data.blockedBot) {
         const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
         const nameParts = form.fullName.trim().split(" ");
         trackGoogleAdsConversion({
@@ -124,6 +128,13 @@ export default function ClientIntakePortalPage() {
           captureMethod: "5-Step Court Intake Questionnaire",
         });
         setSavedRecord(data.intake);
+        setStep(6);
+      } else if (data.blockedBot) {
+        setSavedRecord({
+          id: "INT-RECEIVED",
+          createdAt: new Date().toISOString(),
+          ...form,
+        });
         setStep(6);
       }
     } finally {
@@ -942,6 +953,19 @@ export default function ClientIntakePortalPage() {
                       className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 font-serif italic text-base"
                     />
                   </div>
+                </div>
+
+                <div aria-hidden="true" className="hidden" style={{ position: "absolute", left: "-9999px" }}>
+                  <label htmlFor="intake-company-website">Company Website</label>
+                  <input
+                    id="intake-company-website"
+                    type="text"
+                    name="companyWebsite"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={companyWebsite}
+                    onChange={(e) => setCompanyWebsite(e.target.value)}
+                  />
                 </div>
 
                 <div className="flex justify-between items-center pt-4">

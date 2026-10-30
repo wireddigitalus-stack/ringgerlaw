@@ -46,6 +46,8 @@ export function AiConciergeWidget() {
   const [input, setInput] = useState("");
   const [showLeadCapture, setShowLeadCapture] = useState(false);
   const [leadSubmitted, setLeadSubmitted] = useState(false);
+  const [formStartedAt] = useState(() => Date.now());
+  const [companyWebsite, setCompanyWebsite] = useState("");
   const [leadForm, setLeadForm] = useState({
     firstName: "",
     phone: "",
@@ -83,6 +85,8 @@ export function AiConciergeWidget() {
         email: "",
         county: "Madison County (Jackson)",
         primaryConcern: leadForm.primaryConcern,
+        companyWebsite,
+        formStartedAt,
         estimatedDebt: 30000,
         ownsHome: false,
         behindOnPayments: true,
@@ -94,16 +98,18 @@ export function AiConciergeWidget() {
       }),
     });
     const data = await res.json();
-    const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
-    trackGoogleAdsConversion({
-      action: "AI_CONCIERGE_LEAD",
-      leadId: data?.lead?.id,
-      firstName: leadForm.firstName,
-      phone: leadForm.phone,
-      county: "Madison County (Jackson)",
-      primaryConcern: leadForm.primaryConcern,
-      captureMethod: "AI Debt Concierge",
-    });
+    if (!data?.blockedBot) {
+      const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
+      trackGoogleAdsConversion({
+        action: "AI_CONCIERGE_LEAD",
+        leadId: data?.lead?.id,
+        firstName: leadForm.firstName,
+        phone: leadForm.phone,
+        county: "Madison County (Jackson)",
+        primaryConcern: leadForm.primaryConcern,
+        captureMethod: "AI Debt Concierge",
+      });
+    }
     setLeadSubmitted(true);
   }
 
@@ -226,6 +232,18 @@ export function AiConciergeWidget() {
                       onChange={(e) => setLeadForm({ ...leadForm, phone: e.target.value })}
                       className="w-full px-2.5 py-1.5 rounded bg-white text-slate-900 text-xs"
                     />
+                    <div aria-hidden="true" className="hidden" style={{ position: "absolute", left: "-9999px" }}>
+                      <label htmlFor="concierge-company-website">Company Website</label>
+                      <input
+                        id="concierge-company-website"
+                        type="text"
+                        name="companyWebsite"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={companyWebsite}
+                        onChange={(e) => setCompanyWebsite(e.target.value)}
+                      />
+                    </div>
                     <button
                       type="submit"
                       className="w-full bg-gold-500 hover:bg-gold-400 text-navy-950 font-bold py-2 rounded-lg text-xs cursor-pointer"

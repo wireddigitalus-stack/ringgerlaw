@@ -45,6 +45,8 @@ export function FastCaptureCard({
   allowQuizToggle?: boolean;
 }) {
   const [mode, setMode] = useState<"fast" | "quiz">("fast");
+  const [formStartedAt] = useState(() => Date.now());
+  const [companyWebsite, setCompanyWebsite] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -101,6 +103,8 @@ export function FastCaptureCard({
           email,
           county,
           primaryConcern,
+          companyWebsite,
+          formStartedAt,
           estimatedDebt: 30000,
           ownsHome: primaryConcern.toLowerCase().includes("foreclosure"),
           behindOnPayments:
@@ -112,7 +116,7 @@ export function FastCaptureCard({
         }),
       });
       const data = await res.json();
-      if (data.lead) {
+      if (data.lead && !data.blockedBot) {
         trackGoogleAdsConversion({
           action: "LEAD_FORM_SUBMIT",
           leadId: data.lead.id,
@@ -125,6 +129,28 @@ export function FastCaptureCard({
           captureMethod: "Free Consultation Form",
         });
         setSubmittedLead(data.lead);
+      } else if (data.blockedBot) {
+        setSubmittedLead({
+          id: "LD-RECEIVED",
+          createdAt: new Date().toISOString(),
+          firstName,
+          lastName,
+          phone,
+          email,
+          county,
+          primaryConcern,
+          estimatedDebt: 30000,
+          ownsHome: false,
+          behindOnPayments: false,
+          urgency: "STANDARD_DEBT_RELIEF",
+          recommendedChapter: "Chapter 7 ($0 Down Eligible)",
+          estimatedCaseValue: 0,
+          status: "NEW",
+          preferredDate: "",
+          notes: "",
+          sourcePage: defaultSource,
+          captureMethod: "Free Consultation Form",
+        });
       }
     } finally {
       setSubmitting(false);
@@ -323,6 +349,19 @@ export function FastCaptureCard({
                     <option>Schedule Virtual Zoom</option>
                   </select>
                 </div>
+              </div>
+
+              <div aria-hidden="true" className="hidden" style={{ position: "absolute", left: "-9999px" }}>
+                <label htmlFor="fast-company-website">Company Website</label>
+                <input
+                  id="fast-company-website"
+                  type="text"
+                  name="companyWebsite"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={companyWebsite}
+                  onChange={(e) => setCompanyWebsite(e.target.value)}
+                />
               </div>
 
               <button

@@ -57,6 +57,9 @@ const COUNTY_OPTIONS = [
 ];
 
 export function DebtReliefQuiz({ defaultSource = "/" }: { defaultSource?: string }) {
+  const minQuizDate = new Date().toISOString().slice(0, 10);
+  const [formStartedAt] = useState(() => Date.now());
+  const [companyWebsite, setCompanyWebsite] = useState("");
   const [step, setStep] = useState(1);
   const [primaryConcern, setPrimaryConcern] = useState(CONCERN_OPTIONS[0].id);
   const [estimatedDebt, setEstimatedDebt] = useState(32000);
@@ -93,13 +96,15 @@ export function DebtReliefQuiz({ defaultSource = "/" }: { defaultSource?: string
           ownsHome,
           behindOnPayments,
           preferredDate,
+          companyWebsite,
+          formStartedAt,
           sourcePage: typeof window !== "undefined" ? window.location.pathname : defaultSource,
           captureMethod: "60-Sec Qualifier Quiz",
           notes: `Completed 60-Second Qualifier. Estimated Unsecured Debt: $${estimatedDebt.toLocaleString()}. Homeowner: ${ownsHome ? "Yes" : "No"}, Behind on Mortgage/Car: ${behindOnPayments ? "Yes" : "No"}.`,
         }),
       });
       const data = await res.json();
-      if (data.lead) {
+      if (data.lead && !data.blockedBot) {
         const { trackGoogleAdsConversion } = await import("@/lib/google-ads");
         trackGoogleAdsConversion({
           action: "QUIZ_QUALIFIED_LEAD",
@@ -113,6 +118,29 @@ export function DebtReliefQuiz({ defaultSource = "/" }: { defaultSource?: string
           captureMethod: "60-Sec Qualifier Quiz",
         });
         setCreatedLead(data.lead);
+        setStep(4);
+      } else if (data.blockedBot) {
+        setCreatedLead({
+          id: "LD-QUALIFIED",
+          createdAt: new Date().toISOString(),
+          firstName,
+          lastName,
+          phone,
+          email,
+          county,
+          primaryConcern,
+          estimatedDebt,
+          ownsHome,
+          behindOnPayments,
+          urgency: "STANDARD_DEBT_RELIEF",
+          recommendedChapter: "Chapter 7 ($0 Down Eligible)",
+          estimatedCaseValue: 0,
+          status: "NEW",
+          preferredDate,
+          notes: "",
+          sourcePage: defaultSource,
+          captureMethod: "60-Sec Qualifier Quiz",
+        });
         setStep(4);
       }
     } finally {
@@ -414,9 +442,23 @@ export function DebtReliefQuiz({ defaultSource = "/" }: { defaultSource?: string
               <input
                 type="date"
                 name="preferredDate"
+                min={minQuizDate}
                 value={preferredDate}
                 onChange={(e) => setPreferredDate(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm"
+              />
+            </div>
+
+            <div aria-hidden="true" className="hidden" style={{ position: "absolute", left: "-9999px" }}>
+              <label htmlFor="quiz-company-website">Company Website</label>
+              <input
+                id="quiz-company-website"
+                type="text"
+                name="companyWebsite"
+                tabIndex={-1}
+                autoComplete="off"
+                value={companyWebsite}
+                onChange={(e) => setCompanyWebsite(e.target.value)}
               />
             </div>
 
